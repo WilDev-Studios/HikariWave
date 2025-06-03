@@ -1,0 +1,80 @@
+site_name: hikariwave
+site_url: https://hikariwave.wildevstudios.net
+copyright: Copyright &copy; 2025 WilDev Studios. This software is protected by copyright and licensed under the MIT license.
+
+repo_url: https://github.com/WilDev-Studios/HikariWave
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: pink
+      accent: light green
+  font:
+    text: Monospace
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.tracking
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - search.suggest
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - redirects
+  - mkdocstrings:
+      handlers:
+        python:
+          inventories:
+            - https://docs.python.org/3.10/objects.inv
+            - https://docs.hikari-py.dev/en/latest/objects.inv
+          paths: ["."]
+          options:
+            heading_level: 3
+            annotations_path: source
+            docstring_style: numpy
+            docstring_section_style: spacy
+            inherited_members: true
+            merge_init_into_class: true
+            separate_signature: true
+            show_signature: true
+            show_signature_annotations: true
+            show_source: false
+            show_submodules: false
+            signature_crossrefs: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            members_order: source
+            extra:
+              show_toc: false
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/WilDev-Studios/HikariWave
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/4Ggybyy87d
+
+nav:
+  - Home: index.md
+  - Tutorials:
+    - Tutorials: pages/tutorials/index.md
+  - API Reference:
+    - Client: pages/api/client.md
+    - Connection: pages/api/connection.md
+    - Opcodes: pages/api/opcodes.md
+    - Protocol: pages/api/protocol.md
+  - Changelog:
+    - Index: pages/changelog/index.md
+    - 0.0.1a1 (UNRELEASED): pages/changelog/0.0.1a1.md

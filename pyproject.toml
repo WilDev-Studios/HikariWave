@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hikariwave"
+version = "0.1.0a1"
+description = "Voice module for `hikari`-based Discord bots"
+readme = "README.md"
+requires-python = ">= 3.10"
+license = "MIT"
+authors = [
+    { name = "WilDev Studios", email = "wildevstudios@gmail.com" }
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python"
+]
+keywords = ["asynchronous", "voice", "discord", "hikari", "bot"]
+dependencies = ["aiohttp", "hikari"]
+
+[project.urls]
+"Homepage" = "https://github.com/WilDev-Studios/HikariWave"
