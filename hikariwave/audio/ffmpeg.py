@@ -1,6 +1,6 @@
+from collections.abc import AsyncGenerator
 from hikariwave.audio.source.base import AudioSource
 from hikariwave.constants import Constants
-from typing import AsyncGenerator
 
 import asyncio
 
@@ -69,7 +69,7 @@ class FFmpegDecoder:
         
         Returns
         -------
-        typing.AsyncGenerator[bytes]    
+        collections.abc.AsyncGenerator[bytes]    
             An asynchronous generator that yields frames of FFmpeg data.
         """
         await self._start()

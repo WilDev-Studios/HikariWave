@@ -1,6 +1,7 @@
+from collections.abc import AsyncGenerator
 from hikariwave.audio.source.base import AudioSource
 from hikariwave.constants import Constants
-from typing import AsyncIterator, override
+from typing import override
 
 import asyncio
 
@@ -52,7 +53,7 @@ class FileAudioSource(AudioSource):
         )
 
     @override
-    async def decode(self) -> AsyncIterator[bytes]:
+    async def decode(self) -> AsyncGenerator[bytes]:
         if self._process is None:
             await self._start()
         

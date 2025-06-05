@@ -1,5 +1,6 @@
+from collections.abc import AsyncGenerator
 from hikariwave.audio.source.base import AudioSource
-from typing import AsyncIterator
+from typing import override
 
 class WebAudioSource(AudioSource):
     '''
@@ -25,5 +26,6 @@ class WebAudioSource(AudioSource):
         """
         self._url: str = url
     
-    async def decode(self) -> AsyncIterator[bytes]:
+    @override
+    async def decode(self) -> AsyncGenerator[bytes]:
         ...

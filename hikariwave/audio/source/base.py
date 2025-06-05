@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import AsyncIterator
+from collections.abc import AsyncGenerator
 
 class AudioSource(ABC):
     """
@@ -11,9 +11,9 @@ class AudioSource(ABC):
     """
     
     @abstractmethod
-    async def decode(self) -> AsyncIterator[bytes]:
+    async def decode(self) -> AsyncGenerator[bytes]:
         """
-        Yields PCM frames of this source over an asynchronous iterator.
+        Yields PCM frames of this source over an asynchronous generator.
 
         Warning
         -------
