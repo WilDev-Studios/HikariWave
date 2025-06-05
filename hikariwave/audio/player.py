@@ -7,6 +7,7 @@ from hikariwave.audio.header import Header
 from hikariwave.audio.opus import OpusEncoder
 from hikariwave.audio.source.base import AudioSource
 from hikariwave.constants import Constants
+from typing import Callable
 
 import asyncio
 
@@ -20,6 +21,8 @@ class AudioPlayer:
         self._encoder: OpusEncoder = OpusEncoder()
         self._task: asyncio.Task = None
         self._playing: bool = False
+
+        self._encryption_mode: Callable[[bytes, bytes], bytes] = getattr(self._connection._encryption, self._connection._mode)
     
     async def _playback(self, source: AudioSource) -> None:
         async for pcm_frame in source.decode():
@@ -29,7 +32,7 @@ class AudioPlayer:
             opus_packet: bytes = self._encoder.encode(pcm_frame)
             rtp_header: bytes = Header.create_rtp(self._sequence, self._timestamp, self._connection._ssrc)
 
-            encrypted_packet: bytes = self._connection._mode(rtp_header, opus_packet, self._connection._secret_key)
+            encrypted_packet: bytes = self._encryption_mode(rtp_header, opus_packet)
             self._connection._transport.sendto(encrypted_packet)
 
             self._sequence = (self._sequence + 1) % 65536

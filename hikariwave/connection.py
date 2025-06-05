@@ -71,7 +71,7 @@ class VoiceConnection:
         self._ssrc: int = None
         self._ip: str = None
         self._port: int = None
-        self._mode: Callable[[bytes, bytes, bytes], bytes] = None
+        self._mode: str = None
 
         self._timestamp: int = None
         self._sequence: int = None
@@ -86,6 +86,7 @@ class VoiceConnection:
         self._secret_key: bytes = None
         self._ready_to_send: asyncio.Event = asyncio.Event()
 
+        self._encryption: EncryptionMode = None
         self._player: AudioPlayer = None
 
     async def _heartbeat_loop(self) -> None:
@@ -161,22 +162,21 @@ class VoiceConnection:
                 self._ssrc = data["ssrc"]
                 self._ip = data["ip"]
                 self._port = data["port"]
-                print(data["modes"][0])
 
                 for mode in data["modes"]:
-                    encryption_mode: Callable[[bytes, bytes, bytes], bytes] = getattr(EncryptionMode, mode, None)
+                    encryption_mode: Callable[[bytes, bytes], bytes] = getattr(EncryptionMode, mode, None)
 
                     if not encryption_mode:
                         continue
 
-                    self._mode = encryption_mode
+                    self._mode = mode
                     break
 
                 if not self._mode:
                     error: str = "No supported encryption mode was found"
                     raise RuntimeError(error)
                 
-                self._logger.debug(f"READY: SSRC={self._ssrc}, IP={self._ip}, PORT={self._port}, ENCRYPTION_MODE: {mode}")
+                self._logger.debug(f"READY: SSRC={self._ssrc}, IP={self._ip}, PORT={self._port}, ENCRYPTION_MODE: {self._mode}")
 
                 loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
 
@@ -208,6 +208,7 @@ class VoiceConnection:
                 self._logger.debug(f"Session resumed after disconnect")
             case Opcode.SESSION_DESCRIPTION:
                 self._secret_key = bytes(data["secret_key"])
+                self._encryption = EncryptionMode(self._secret_key)
                 self._ready_to_send.set()
 
                 self._logger.debug(f"Session secret key received - Discord servers and client ready for voice packets")
