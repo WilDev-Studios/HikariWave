@@ -4,70 +4,70 @@ class Opcode(IntEnum):
     """Basic definitions for Discord operation codes."""
 
     IDENTIFY: int = 0
-    """Opcode responsible for sending the `Identify` payload."""
+    """Begin a voice websocket connection."""
 
     SELECT_PROTOCOL: int = 1
-    """Opcode responsible for sending the `Select Protocol` payload."""
+    """Select the voice protocol."""
 
     READY: int = 2
-    """Opcode responsible for receiving the `Ready` payload."""
+    """Complete the websocket handshake."""
 
     HEARTBEAT: int = 3
-    """Opcode responsible for sending the `Heartbeat` payload."""
+    """Keep the websocket connection alive."""
 
     SESSION_DESCRIPTION: int = 4
-    """Opcode responsible for receiving the `Session Description` payload."""
+    """Describe the session."""
 
     SPEAKING: int = 5
-    """Opcode responsible for sending/receiving the `Speaking` payload."""
+    """Indicate which users are speaking."""
 
     HEARTBEAT_ACK: int = 6
-    """Opcode responsible for receiving the `Heartbeat ACK` payload."""
+    """Sent to acknowledge a received client heartbeat."""
 
     RESUME: int = 7
-    """Opcode responsible for sending the `Resume` payload."""
+    """Resume a connection."""
 
     HELLO: int = 8
-    """Opcode responsible for receiving the `Hello` payload."""
+    """Time to wait between sending heartbeats in milliseconds."""
 
     RESUMED: int = 9
-    """Opcode responsible for receiving the `Resumed` payload."""
+    """Acknowledge a successful session resume."""
 
     CLIENTS_CONNECT: int = 11
-    """Opcode responsible for receiving the `Clients Connect` payload."""
+    """One or more clients have connected to the voice channel."""
 
     CLIENT_DISCONNECT: int = 13
-    """Opcode responsible for receiving the `Client Disconnect` payload."""
+    """A client has disconnected from the voice channel."""
 
     DAVE_PREPARE_TRANSITION: int = 21
-    """Opcode responsible for receiving the `DAVE Prepare Transition` payload."""
+    """A downgrade from the DAVE protocol is upcoming."""
 
     DAVE_EXECUTE_TRANSITION: int = 22
-    """Opcode responsible for receiving the `DAVE Execute Transition` payload."""
+    """Execute a previously announced protocol transition."""
 
     DAVE_TRANSITION_READY: int = 23
-    """Opcode responsible for sending the `DAVE Transition Ready` payload."""
+    """Acknowledge readiness previously announced transition."""
 
     DAVE_PREPARE_EPOCH: int = 24
-    """Opcode responsible for receiving the `DAVE Prepare Epoch` payload."""
+    """A DAVE protocol version or group change is upcoming."""
 
     DAVE_MLS_EXTERNAL_SENDER: int = 25
-    """Opcode responsible for receiving the `DAVE MLS External Sender` payload."""
+    """Credential and public key for MLS external sender."""
 
     DAVE_MLS_KEY_PACKAGE: int = 26
-    """Opcode responsible for sending the `DAVE MLS Key Package` payload."""
+    """MLS Key Package for pending group member."""
 
     DAVE_MLS_PROPOSALS: int = 27
-    """Opcode responsible for receiving the `DAVE MLS Proposals` payload."""
+    """MLS Proposals to be appended or revoked."""
 
     DAVE_MLS_COMMIT_WELCOME: int = 28
-    """Opcode responsible for sending the `DAVE MLS Commit Welcome` payload."""
+    """MLS Commit with optional MLS Welcome messages."""
 
     DAVE_MLS_ANNOUNCE_COMMIT_TRANSITION: int = 29
-    """Opcode responsible for receiving the `DAVE MLS Announce Commit Transition` payload."""
+    """MLS Commit to be processed for upcoming transition."""
 
     DAVE_MLS_WELCOME: int = 30
-    """Opcode responsible for receiving the `DAVE MLS Welcome` payload."""
+    """MLS Welcome to group for upcoming transition."""
 
     DAVE_MLS_INVALID_COMMIT_WELCOME: int = 31
-    """Opcode responsible for sending the `DAVE MLS Invalid Commit Welcome` payload."""
+    """Flag invalid commit or welcome, request re-add."""
