@@ -1,5 +1,5 @@
 """
-## HikariWave
+## hikari-wave
 Voice module for `hikari`-based Discord bots
 
 #### Documentation: https://hikari-wave.wildevstudios.net/en/0.0.1a1
