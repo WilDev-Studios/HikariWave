@@ -24,4 +24,4 @@ async def voice_state_update(event: hikari.VoiceStateUpdateEvent) -> None:
     else:
         await voice.disconnect(event.guild_id)
 
-bot.run(asyncio_debug=True)
+bot.run()

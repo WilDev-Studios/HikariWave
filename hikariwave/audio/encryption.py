@@ -77,7 +77,7 @@ class EncryptionMode:
         Warning
         -------
         - This encryption method is deprecated by Discord (November 18th, 2024).
-        - https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes
+        - [https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes](https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes)
 
         Parameters
         ----------
@@ -150,7 +150,7 @@ class EncryptionMode:
         Warning
         -------
         - This encryption method is deprecated by Discord (November 18th, 2024).
-        - https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes
+        - [https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes](https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes)
 
         Parameters
         ----------
@@ -177,7 +177,7 @@ class EncryptionMode:
         Warning
         -------
         - This encryption method is deprecated by Discord (November 18th, 2024).
-        - https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes
+        - [https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes](https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes)
 
         Parameters
         ----------
@@ -204,7 +204,7 @@ class EncryptionMode:
         Warning
         -------
         - This encryption method is deprecated by Discord (November 18th, 2024).
-        - https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes
+        - [https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes](https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes)
 
         Parameters
         ----------
@@ -234,7 +234,7 @@ class EncryptionMode:
         Warning
         -------
         - This encryption method is deprecated by Discord (November 18th, 2024).
-        - https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes
+        - [https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes](https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes)
 
         Parameters
         ----------

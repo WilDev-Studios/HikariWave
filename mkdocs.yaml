@@ -71,8 +71,21 @@ nav:
   - Tutorials:
     - Tutorials: pages/tutorials/index.md
   - API Reference:
+    - Audio:
+      - Encryption: pages/api/audio/encryption.md
+      - FFmpeg: pages/api/audio/ffmpeg.md
+      - Header: pages/api/audio/header.md
+      - Opus: pages/api/audio/opus.md
+      - Player: pages/api/audio/player.md
+      - Source:
+        - Base: pages/api/audio/source/base.md
+        - File: pages/api/audio/source/file.md
+        - Silent: pages/api/audio/source/silent.md
+        - Web: pages/api/audio/source/web.md
     - Client: pages/api/client.md
     - Connection: pages/api/connection.md
+    - Constants: pages/api/constants.md
+    - Flag: pages/api/flag.md
     - Opcodes: pages/api/opcode.md
     - Protocol: pages/api/protocol.md
   - Changelog:

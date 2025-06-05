@@ -4,4 +4,4 @@ description: Voice Gateway Opcodes
 ---
 
 # Opcodes
-::: hikariwave.opcodes
+::: hikariwave.opcode
