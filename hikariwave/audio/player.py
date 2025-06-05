@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from hikariwave.connection import VoiceConnection
 
-from hikariwave.audio.header import Header
+from hikariwave.header import Header
 from hikariwave.audio.opus import OpusEncoder
 from hikariwave.audio.source.base import AudioSource
 from hikariwave.constants import Constants
