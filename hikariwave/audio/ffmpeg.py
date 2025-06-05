@@ -1,16 +1,24 @@
-from collections.abc import AsyncGenerator
-from hikariwave.audio.source.base import AudioSource
-from hikariwave.constants import Constants
-
 import asyncio
+import typing
+from collections.abc import AsyncGenerator
+
+from hikariwave.audio.source.base import AudioSource
+from hikariwave.internal import constants
+
+__all__: typing.Sequence[str] = ("FFmpegDecoder",)
+
 
 class FFmpegDecoder:
-    '''FFmpeg process handler and decoder.'''
+    """FFmpeg process handler and decoder."""
 
-    def __init__(self, source: AudioSource, format_: str=Constants.PCM_FORMAT) -> None:
+    def __init__(
+        self,
+        source: AudioSource,
+        format_: str = constants.PCM_FORMAT,
+    ) -> None:
         """
         Instantiate an FFmpeg decoder.
-        
+
         Warning
         -------
         This is an internal object and should not be instantiated.
@@ -18,11 +26,11 @@ class FFmpegDecoder:
         self._source: AudioSource = source
         self._format: str = format_
         self._process: asyncio.subprocess.Process = None
-    
+
     async def _cleanup(self) -> None:
         if not self._process:
             return
-        
+
         if self._process.stdin:
             self._process.stdin.close()
 
@@ -49,27 +57,35 @@ class FFmpegDecoder:
     async def _start(self) -> None:
         self._process = await asyncio.create_subprocess_exec(
             "ffmpeg",
-            "-f", self._format,
-            "-ar", str(Constants.SAMPLE_RATE),
-            "-ac", str(Constants.CHANNELS),
-            "-i", "pipe:0",
-            "-f", self._format,
-            "-ar", str(Constants.SAMPLE_RATE),
-            "-ac", str(Constants.CHANNELS),
-            "-loglevel", "quiet",
+            "-f",
+            self._format,
+            "-ar",
+            str(constants.SAMPLE_RATE),
+            "-ac",
+            str(constants.CHANNELS),
+            "-i",
+            "pipe:0",
+            "-f",
+            self._format,
+            "-ar",
+            str(constants.SAMPLE_RATE),
+            "-ac",
+            str(constants.CHANNELS),
+            "-loglevel",
+            "quiet",
             "pipe:1",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.DEVNULL
+            stderr=asyncio.subprocess.DEVNULL,
         )
-    
+
     async def decode(self) -> AsyncGenerator[bytes]:
         """
         Decode a given source in the decoder.
-        
+
         Returns
         -------
-        collections.abc.AsyncGenerator[bytes]    
+        collections.abc.AsyncGenerator[bytes]
             An asynchronous generator that yields frames of FFmpeg data.
         """
         await self._start()
@@ -77,11 +93,11 @@ class FFmpegDecoder:
         asyncio.create_task(self._feed_ffmpeg())
 
         while True:
-            data: bytes = await self._process.stdout.read(Constants.FRAME_SIZE * 4)
+            data: bytes = await self._process.stdout.read(constants.FRAME_SIZE * 4)
 
             if not data:
                 break
 
             yield data
-        
+
         await self._cleanup()

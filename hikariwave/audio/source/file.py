@@ -1,27 +1,29 @@
+import asyncio
 from collections.abc import AsyncGenerator
-from hikariwave.audio.source.base import AudioSource
-from hikariwave.constants import Constants
+
 from typing_extensions import override
 
-import asyncio
+from hikariwave.audio.source.base import AudioSource
+from hikariwave.internal import constants
+
 
 class FileAudioSource(AudioSource):
     """
     File-based audio source implementation.
-    
+
     Warning
     -------
     This is an internal object and should not be instantiated.
     """
-    
+
     def __init__(self, filepath: str) -> None:
         """
         Instantiate a file audio source.
-        
+
         Warning
         -------
         This is an internal method and should not be called.
-        
+
         Parameters
         ----------
         filepath : str
@@ -33,7 +35,7 @@ class FileAudioSource(AudioSource):
     async def _cleanup(self) -> None:
         if not self._process:
             return
-        
+
         try:
             self._process.kill()
             await self._process.wait()
@@ -45,27 +47,32 @@ class FileAudioSource(AudioSource):
     async def _start(self) -> None:
         self._process = await asyncio.create_subprocess_exec(
             "ffmpeg",
-            "-i", self._filepath,
-            "-f", Constants.PCM_FORMAT,
-            "-ar", str(Constants.SAMPLE_RATE),
-            "-ac", str(Constants.CHANNELS),
-            "-loglevel", "error",
+            "-i",
+            self._filepath,
+            "-f",
+            constants.PCM_FORMAT,
+            "-ar",
+            str(constants.SAMPLE_RATE),
+            "-ac",
+            str(constants.CHANNELS),
+            "-loglevel",
+            "error",
             "pipe:1",
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.DEVNULL
+            stderr=asyncio.subprocess.DEVNULL,
         )
 
     @override
     async def decode(self) -> AsyncGenerator[bytes, None, None]:
         if self._process is None:
             await self._start()
-        
+
         while True:
-            content: bytes = await self._process.stdout.read(Constants.FRAME_SIZE * 4)
+            content: bytes = await self._process.stdout.read(constants.FRAME_SIZE * 4)
 
             if content:
                 yield content
             else:
                 break
-        
+
         await self._cleanup()

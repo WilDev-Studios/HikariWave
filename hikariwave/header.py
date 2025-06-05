@@ -1,4 +1,8 @@
 import struct
+import typing
+
+__all__: typing.Sequence[str] = ("Header",)
+
 
 class Header:
     """Container class for generating headers."""
@@ -7,7 +11,7 @@ class Header:
     def create_rtp(sequence: int, timestamp: int, ssrc: int) -> bytes:
         """
         Create an RTP header.
-        
+
         Warning
         -------
         This is an internal method and should not be called.
@@ -20,7 +24,7 @@ class Header:
             The timestamp of the Opus frame being sent.
         ssrc : int
             The SSRC of the connection sending this header - Provided by Discord's `READY` payload.
-        
+
         Returns
         -------
         bytes
@@ -28,11 +32,11 @@ class Header:
         """
         header: bytes = struct.pack(
             ">BBHII",
-            0x80, # Version 2, no padding, no extension, no CSRC
-            0x78, # Opus
+            0x80,  # Version 2, no padding, no extension, no CSRC
+            0x78,  # Opus
             sequence,
             timestamp,
-            ssrc
+            ssrc,
         )
 
         return header
