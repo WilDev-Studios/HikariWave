@@ -14,7 +14,27 @@ from typing import Callable
 import asyncio
 
 class AudioPlayer:
+    """
+    Handler class meant to control and handle the playing of audio for each connection.
+    
+    Warning
+    -------
+    This is an internal object and should not be instantiated.
+    """
+    
     def __init__(self, connection: VoiceConnection) -> None:
+        """
+        Instantiate a new audio player.
+        
+        Warning
+        -------
+        This is an internal method and should not be called.
+        
+        Parameters
+        ----------
+        connection : VoiceConnection
+            The connection that this player will interface with.
+        """
         self._connection: VoiceConnection = connection
 
         self._sequence: int = 0
@@ -45,6 +65,18 @@ class AudioPlayer:
         self._playing = False
 
     async def play(self, source: AudioSource) -> None:
+        """
+        Play the selected audio source and stream it to the connection.
+        
+        Warning
+        -------
+        This is an internal method and should not be called.
+        
+        Parameters
+        ----------
+        source : AudioSource
+            The audio source to stream from.
+        """
         if self._playing:
             await self.stop()
 
@@ -52,6 +84,13 @@ class AudioPlayer:
         self._task = asyncio.create_task(self._playback(source))
     
     async def stop(self) -> None:
+        """
+        Stop the player from streaming audio to the connection.
+        
+        Warning
+        -------
+        This is an internal method and should not be called.
+        """
         if not self._task:
             return
         
