@@ -6,10 +6,12 @@ repo_url: https://github.com/WilDev-Studios/hikari-wave
 
 theme:
   name: material
+  logo: images/logo.png
+  favicon: images/logo-padded.png
   palette:
     - scheme: slate
       primary: pink
-      accent: light green
+      accent: orange
   font:
     text: Monospace
   features:
@@ -74,7 +76,6 @@ nav:
     - Audio:
       - Encryption: pages/api/audio/encryption.md
       - FFmpeg: pages/api/audio/ffmpeg.md
-      - Header: pages/api/audio/header.md
       - Opus: pages/api/audio/opus.md
       - Player: pages/api/audio/player.md
       - Source:
@@ -86,6 +87,7 @@ nav:
     - Connection: pages/api/connection.md
     - Constants: pages/api/constants.md
     - Flag: pages/api/flag.md
+    - Header: pages/api/header.md
     - Opcodes: pages/api/opcode.md
     - Protocol: pages/api/protocol.md
   - Changelog:
