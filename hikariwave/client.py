@@ -94,13 +94,13 @@ class VoiceClient:
         
         Raises
         ------
-        RuntimeError
+        ConnectionAlreadyEstablishedError
             If the bot is currently in another voice channel.
         """
         
         if guild_id in self._active_connections:
             error: str = "Disconnect from the current channel before connecting to another"
-            raise RuntimeError(error)
+            raise errors.ConnectionAlreadyEstablishedError(error)
         
         self._pending_connections[guild_id] = PendingConnection()
         await self.bot.update_voice_state(guild_id, channel_id, self_mute=mute, self_deaf=deaf)
@@ -118,13 +118,13 @@ class VoiceClient:
         
         Raises
         ------
-        RuntimeError
+        ConnectionNotEstablishedError
             If the bot is not currently connected to a channel in the guild provided.
         """
         
         if guild_id not in self._active_connections:
             error: str = "No active connection to this guild was found at disconnect"
-            raise RuntimeError(error)
+            raise errors.ConnectionNotEstablishedError(error)
         
         await self._active_connections[guild_id].close()
         del self._active_connections[guild_id]

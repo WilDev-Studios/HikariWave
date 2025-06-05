@@ -12,6 +12,7 @@ from typing import Callable
 import aiohttp
 import asyncio
 import hikari
+import hikariwave.error as errors
 import logging
 import time
 
@@ -178,7 +179,7 @@ class VoiceConnection:
 
                 if not self._mode:
                     error: str = "No supported encryption mode was found"
-                    raise RuntimeError(error)
+                    raise errors.EncryptionModeNotSupportedError(error)
                 
                 logger.debug(f"READY: SSRC={self._ssrc}, IP={self._ip}, PORT={self._port}, ENCRYPTION_MODE: {self._mode}")
 
