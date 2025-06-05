@@ -4,10 +4,10 @@ import asyncio
 import struct
 
 class VoiceClientProtocol(asyncio.DatagramProtocol):
-    '''UDP client to interact with Discord's voice gateway.'''
+    """UDP client to interact with Discord's voice gateway."""
 
     def __init__(self, ssrc: int, callback: Callable[[str, int], None]) -> None:
-        '''
+        """
         Create a new UDP client.
         
         Warning
@@ -20,21 +20,21 @@ class VoiceClientProtocol(asyncio.DatagramProtocol):
             The provided SSRC from Discord's `READY` packet.
         callback : typing.Callable[[str, int], None]
             The synchronous method to call when the device's external UDP IP and port are discovered.
-        '''
+        """
         
         self._transport: asyncio.DatagramTransport = None
         self._ssrc: int = ssrc
         self._callback: Callable[[str, int], None] = callback
     
     def connection_made(self, transport: asyncio.DatagramTransport) -> None:
-        '''
+        """
         Method called automatically when a UDP connection is made.
 
         Warning
         -------
         - This method should only be called internally.
         - Calling this method may cause issues.
-        '''
+        """
         
         self._transport = transport
 
@@ -46,14 +46,14 @@ class VoiceClientProtocol(asyncio.DatagramProtocol):
         self._transport.sendto(packet)
     
     def datagram_received(self, data: bytes, _: tuple[str, int]) -> None:
-        '''
+        """
         Method called automatically when a UDP packet is received.
 
         Warning
         -------
         - This method should only be called internally.
         - Calling this method may cause issues.
-        '''
+        """
         
         if len(data) != 74 or data[1] != 0x02:
             return

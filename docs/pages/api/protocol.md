@@ -3,5 +3,6 @@ title: Protocol
 description: Voice Protocol
 ---
 
-# Protocol
+## Protocol
+
 ::: hikariwave.protocol

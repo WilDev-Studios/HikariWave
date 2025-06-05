@@ -1,0 +1,73 @@
+from collections.abc import AsyncGenerator
+from hikariwave.audio.source.base import AudioSource
+from hikariwave.constants import Constants
+from typing import override
+
+import aiohttp
+import asyncio
+
+class WebAudioSource(AudioSource):
+    '''
+    Web-based audio source implementation.
+    
+    Warning
+    -------
+    This is an internal object and should not be instantiated.
+    '''
+    
+    def __init__(self, url: str) -> None:
+        """
+        Create a new web audio source.
+        
+        Warning
+        -------
+        This is an internal method and should not be called.
+        
+        Parameters
+        ----------
+        url : str
+            The URL of an audio file.
+        """
+        self._url: str = url
+
+    @override
+    async def decode(self) -> AsyncGenerator[bytes]:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(self._url) as response:
+                if response.status != 200:
+                    error: str = f"Failed to fetch audio: HTTP {response.status}"
+                    raise RuntimeError(error)
+                
+                ffmpeg: asyncio.subprocess.Process = await asyncio.create_subprocess_exec(
+                    "ffmpeg",
+                    "-i", "pipe:0",
+                    "-f", str(Constants.PCM_FORMAT),
+                    "-ar", str(Constants.SAMPLE_RATE),
+                    "-ac", str(Constants.CHANNELS),
+                    "pipe:1",
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.DEVNULL
+                )
+
+                async def feed_ffmpeg() -> None:
+                    async for chunk in response.content.iter_chunked(1024 * 16):
+                        if not chunk:
+                            break
+
+                        ffmpeg.stdin.write(chunk)
+                        await ffmpeg.stdin.drain()
+                    
+                    ffmpeg.stdin.close()
+                
+                asyncio.create_task(feed_ffmpeg())
+
+                while True:
+                    pcm: bytes = await ffmpeg.stdout.read(Constants.FRAME_SIZE * Constants.CHANNELS * 2)
+
+                    if not pcm:
+                        break
+
+                    yield pcm
+                
+                await ffmpeg.wait()

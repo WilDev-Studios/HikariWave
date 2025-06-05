@@ -3,5 +3,6 @@ title: Client
 description: Voice Client
 ---
 
-# Client
+## Client
+
 ::: hikariwave.client
