@@ -1,4 +1,5 @@
 # hikari-wave Changelog
+
 We try to provide as much detail as possible so developers can understand which versions of `hikari-wave` they would like to develop with.
 
 !!! danger "Disclaimer"
