@@ -35,8 +35,8 @@ class AudioPlayer:
             encrypted_packet: bytes = self._encryption_mode(rtp_header, opus_packet)
             self._connection._transport.sendto(encrypted_packet)
 
-            self._sequence = (self._sequence + 1) % 65536
-            self._timestamp = (self._timestamp + Constants.FRAME_SIZE) % (2 ** 32)
+            self._sequence = (self._sequence + 1) % Constants.BIT_16
+            self._timestamp = (self._timestamp + Constants.FRAME_SIZE) % (Constants.BIT_32)
 
             await asyncio.sleep(Constants.FRAME_LENGTH / 1000)
         

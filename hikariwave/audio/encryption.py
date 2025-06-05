@@ -48,7 +48,7 @@ class EncryptionMode:
         while True:
             yield b"\x00" * 20 + counter.to_bytes(4, "big")
 
-            counter = (counter + 1) % (2 ** 32)
+            counter = (counter + 1) % (Constants.BIT_32)
 
     def _generate_nonce_random(self) -> Generator[bytes, None, None]:
         while True:

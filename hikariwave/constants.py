@@ -1,6 +1,12 @@
 class Constants:
     """Defined, constant values used across this module."""
 
+    BIT_16: int = 65536
+    """65536 <=> 2^16."""
+
+    BIT_32: int = 4_294_967_296
+    """4,294,967,296 <=> 2^32."""
+
     CHANNELS: int = 2
     """The required amount of channels that Discord requires when sending voice streams."""
 
