@@ -4,22 +4,22 @@ from hikariwave.constants import Constants
 from typing import AsyncIterator
 
 class SilentAudioSource(AudioSource):
-    '''
+    """
     Silent audio source implementation.
     
     Warning
     -------
     This is an internal object and should not be instantiated manually.
-    '''
+    """
 
     def __init__(self) -> None:
-        '''
+        """
         Create a new silent audio source.
         
         Warning
         -------
         This is an internal object and should not be instantiated manually.
-        '''
+        """
 
         self._encoder: OpusEncoder = OpusEncoder()
 

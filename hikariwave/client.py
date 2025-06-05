@@ -7,17 +7,17 @@ import logging
 logger: logging.Logger = logging.getLogger("hikariwave.client")
 
 class VoiceClient:
-    '''Voice client to interact with Discord's voice system.'''
+    """Voice client to interact with Discord's voice system."""
 
     def __init__(self, bot: hikari.GatewayBot) -> None:
-        '''
+        """
         Create a new voice client to interact with Discord's voice system.
         
         Parameters
         ----------
         bot : hikari.GatewayBot
             The Discord bot client to interface with.
-        '''
+        """
         
         self.bot: hikari.GatewayBot = bot
         self.bot.subscribe(hikari.VoiceServerUpdateEvent, self._server_update)
@@ -78,7 +78,7 @@ class VoiceClient:
         await self._try_connection(event.guild_id)
 
     async def connect(self, guild_id: hikari.Snowflake, channel_id: hikari.Snowflake, *, mute: bool=False, deaf: bool=True) -> None:
-        '''
+        """
         Connect to a voice channel.
         
         Parameters
@@ -96,7 +96,7 @@ class VoiceClient:
         ------
         RuntimeError
             If the bot is currently in another voice channel.
-        '''
+        """
         
         if guild_id in self._active_connections:
             error: str = "Disconnect from the current channel before connecting to another"
@@ -108,7 +108,7 @@ class VoiceClient:
         logger.info(f"Connecting to GUILD: {guild_id}, CHANNEL: {channel_id} - MUTED: {mute}, DEAFENED: {deaf}")
     
     async def disconnect(self, guild_id: hikari.Snowflake) -> None:
-        '''
+        """
         Disconnect from a voice channel.
         
         Parameters
@@ -120,7 +120,7 @@ class VoiceClient:
         ------
         RuntimeError
             If the bot is not currently connected to a channel in the guild provided.
-        '''
+        """
         
         if guild_id not in self._active_connections:
             error: str = "No active connection to this guild was found at disconnect"

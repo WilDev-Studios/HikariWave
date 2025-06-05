@@ -19,22 +19,22 @@ logger: logging.Logger = logging.getLogger("hikariwave.connection")
 
 @dataclass
 class PendingConnection:
-    '''A pending connection to a Discord voice server.'''
+    """A pending connection to a Discord voice server."""
 
     endpoint: str=None
-    '''The endpoint in which this connection should connect to when activated.'''
+    """The endpoint in which this connection should connect to when activated."""
 
     session_id: str=None
-    '''The ID of the session provided by Discord that should be used to connect to/resume a session.'''
+    """The ID of the session provided by Discord that should be used to connect to/resume a session."""
 
     token: str=None
-    '''The token provided by Discord that should be used to identify when connecting.'''
+    """The token provided by Discord that should be used to identify when connecting."""
 
 class VoiceConnection:
-    '''An active connection to a Discord voice server.'''
+    """An active connection to a Discord voice server."""
 
     def __init__(self, bot: hikari.GatewayBot, guild_id: hikari.Snowflake) -> None:
-        '''
+        """
         Instantiate a new active voice connection.
         
         Warning
@@ -48,7 +48,7 @@ class VoiceConnection:
             The bot instance to interface with.
         guild_id : hikari.Snowflake
             The ID of the guild that this connection is responsible for.
-        '''
+        """
         
         self._bot: hikari.GatewayBot = bot
         self._guild_id: hikari.Snowflake = guild_id
@@ -212,14 +212,14 @@ class VoiceConnection:
                 logger.debug(f"Session secret key received - Discord servers and client ready for voice packets")
 
     async def close(self) -> None:
-        '''
+        """
         Close this connection and all subsequent tasks, websockets, and packet transports.
         
         Warning
         -------
         - This method should only be called internally.
         - Calling this method may cause issues.
-        '''
+        """
         
         self._running = False
 
@@ -232,22 +232,26 @@ class VoiceConnection:
                 await self._heartbeat_task
             except asyncio.CancelledError:
                 ...
+            
+            self._heartbeat_task = None
         
         if self._websocket and not self._websocket.closed:
             await self._websocket.close()
+            self._websocket = None
 
         if self._transport:
             self._transport.close()
+            self._transport = None
 
     async def connect(self, endpoint: str, session_id: str, token: str) -> None:
-        '''
+        """
         Connect to an endpoint with a session ID and token.
         
         Warning
         -------
         - This method should only be called internally.
         - Calling this method may cause issues.
-        '''
+        """
         
         self._endpoint = endpoint
         self._session_id = session_id
@@ -268,13 +272,10 @@ class VoiceConnection:
         await self._set_speaking(False)
     
     async def play_silence(self) -> None:
-        print("waiting")
         await self._ready_to_send.wait()
-        print("ready")
         await self._set_speaking(True)
 
         logger.debug("Playing silent audio frames to current voice channel")
-        print("statement 1")
 
         source: SilentAudioSource = SilentAudioSource()
         self._player = AudioPlayer(self)
@@ -288,7 +289,6 @@ class VoiceConnection:
             await self._set_speaking(False)
         
         logger.debug("Finished playing silent audio frames to current voice channel")
-        print("statement 2")
     
     async def stop(self) -> None:
         if not self._player:

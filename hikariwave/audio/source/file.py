@@ -1,5 +1,6 @@
 from hikariwave.audio.source.base import AudioSource
 from hikariwave.constants import Constants
+from typing import AsyncIterator
 
 import asyncio
 
@@ -24,19 +25,22 @@ class FileAudioSource(AudioSource):
             "-f", Constants.PCM_FORMAT,
             "-ar", str(Constants.SAMPLE_RATE),
             "-ac", str(Constants.CHANNELS),
-            "-loglevel", "quiet",
+            "-loglevel", "error",
             "pipe:1",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.DEVNULL
         )
 
-    async def read(self, n: int) -> bytes:
-        if self._process is None or self._process.stdout is None:
+    async def decode(self) -> AsyncIterator[bytes]:
+        if self._process is None:
             await self._start()
         
-        data: bytes = await self._process.stdout.read(n)
+        while True:
+            content: bytes = await self._process.stdout.read(Constants.FRAME_SIZE * 4)
 
-        if not data:
-            await self._cleanup()
+            if content:
+                yield content
+            else:
+                break
         
-        return data
+        await self._cleanup()

@@ -1,21 +1,19 @@
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from nacl.bindings import crypto_aead_xchacha20poly1305_ietf_encrypt, crypto_secretbox, crypto_secretbox_NONCEBYTES
-from nacl.encoding import RawEncoder
-from nacl.secret import SecretBox
 from nacl.utils import random as nacl_random
 from typing import Generator
 
 class EncryptionMode:
-    '''
+    """
     Container class for all supported packet encryption modes.
     
     Warning
     -------
     This is an internal object and should not be instantiated.
-    '''
+    """
 
     def __init__(self, secret_key: bytes) -> None:
-        '''
+        """
         Create a localized encryption instance.
         
         Warning
@@ -31,7 +29,7 @@ class EncryptionMode:
         ------
         ValueError
             `secret_key` is not 32 bytes in length.
-        '''
+        """
 
         if len(secret_key) != 32:
             error: str = "Secret key must be 32 bytes (256 bits) in length"
@@ -73,7 +71,7 @@ class EncryptionMode:
             counter = (counter + 1) % (2 ** 192)
 
     def aead_aes256_gcm(self, header: bytes, data: bytes) -> bytes:
-        '''
+        """
         Encrypts audio data using AEAD AES-256-GCM with an incrementing 12-byte nonce.
 
         Warning
@@ -92,7 +90,7 @@ class EncryptionMode:
         -------
         bytes
             The encrypted audio data.
-        '''
+        """
 
         nonce: bytes = next(self._nonce_strd_generator)
         ciphertext: bytes = AESGCM(self._secret_key).encrypt(nonce, data, header)
@@ -100,7 +98,7 @@ class EncryptionMode:
         return header + ciphertext + nonce
 
     def aead_aes256_gcm_rtpsize(self, header: bytes, data: bytes) -> bytes:
-        '''
+        """
         Encrypts audio data using AEAD AES-256-GCM with a nonce derived from the first 12 bytes of the RTP header.
         
         Parameters
@@ -114,7 +112,7 @@ class EncryptionMode:
         -------
         bytes
             The encrypted audio data.
-        '''
+        """
         
         nonce: bytes = header[:12]
         ciphertext = AESGCM(self._secret_key).encrypt(nonce, data, header)
@@ -122,7 +120,7 @@ class EncryptionMode:
         return header + ciphertext
 
     def aead_xchacha20_poly1305_rtpsize(self, header: bytes, data: bytes) -> bytes:
-        '''
+        """
         Encrypts audio data using AEAD AES-XChaCha20-Poly1305 with a 24-byte, incrementing nonce.
         
         Parameters
@@ -136,7 +134,7 @@ class EncryptionMode:
         -------
         bytes
             The encrypted audio data.
-        '''
+        """
         
         nonce: bytes = next(self._nonce_xcha_generator)
         ciphertext: bytes = crypto_aead_xchacha20poly1305_ietf_encrypt(
@@ -146,7 +144,7 @@ class EncryptionMode:
         return header + nonce + ciphertext
 
     def xsalsa20_poly1305(self, header: bytes, data: bytes) -> bytes:
-        '''
+        """
         Encrypts audio data using XSalsa20-Poly1305 with a nonce derived from the RTP header.
 
         Warning
@@ -165,7 +163,7 @@ class EncryptionMode:
         -------
         bytes
             The encrypted audio data.
-        '''
+        """
 
         nonce: bytes = header.ljust(24, b"\x00")
         ciphertext: bytes = crypto_secretbox(data, nonce, self._secret_key)
@@ -173,7 +171,7 @@ class EncryptionMode:
         return header + ciphertext
     
     def xsalsa20_poly1305_lite(self, header: bytes, data: bytes) -> bytes:
-        '''
+        """
         Encrypts audio data using XSalsa20-Poly1305 with a 24 byte nonce composed of 20 null bytes followed by a 4 byte counter.
 
         Warning
@@ -192,7 +190,7 @@ class EncryptionMode:
         -------
         bytes
             The encrypted audio data.
-        '''
+        """
 
         nonce: bytes = next(self._nonce_lite_generator)
         ciphertext: bytes = crypto_secretbox(data, nonce, self._secret_key)
@@ -200,7 +198,7 @@ class EncryptionMode:
         return header + ciphertext
 
     def xsalsa20_poly1305_lite_rtpsize(self, header: bytes, data: bytes) -> bytes:
-        '''
+        """
         Encrypts audio data using XSalsa20-Poly1305-Lite with a 24 byte nonce composed of a 4 byte incrementing prefix and 20 trailing null bytes.
 
         Warning
@@ -219,7 +217,7 @@ class EncryptionMode:
         -------
         bytes
             The encrypted audio data.
-        '''
+        """
 
         full_nonce: bytes = next(self._nonce_strd_generator)
         lite_nonce: bytes = full_nonce[:4]
@@ -230,7 +228,7 @@ class EncryptionMode:
         return header + ciphertext + lite_nonce
     
     def xsalsa20_poly1305_suffix(self, header: bytes, data: bytes) -> bytes:
-        '''
+        """
         Encrypts audio data using XSalsa20-Poly1305 using a random 24 byte nonce appended to the end of the encrypted packet.
 
         Warning
@@ -249,7 +247,7 @@ class EncryptionMode:
         -------
         bytes
             The encrypted audio data.
-        '''
+        """
 
         nonce: bytes = next(self._nonce_rndm_generator)
         ciphertext: bytes = crypto_secretbox(data, nonce, self._secret_key)

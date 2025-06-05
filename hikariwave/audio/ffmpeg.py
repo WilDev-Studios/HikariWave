@@ -60,7 +60,7 @@ class FFmpegDecoder:
         asyncio.create_task(self._feed_ffmpeg())
 
         while True:
-            data: bytes = await self._process.stdout.read(3840)
+            data: bytes = await self._process.stdout.read(Constants.FRAME_SIZE * 4)
 
             if not data:
                 break
