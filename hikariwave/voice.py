@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import enum
+import logging
 import typing
 
 import hikari
@@ -25,6 +26,8 @@ __all__: typing.Sequence[str] = (
     "decode",
     "encode",
 )
+
+_logger: typing.Final[logging.Logger] = logging.getLogger("hikariwave.voice")
 
 
 class VoiceCode(enum.IntEnum):
@@ -104,13 +107,76 @@ class VoiceCode(enum.IntEnum):
     DAVE_MLS_INVALID_COMMIT_WELCOME = 31
     """Opcode responsible for sending the `DAVE MLS Invalid Commit Welcome` payload."""
 
+    UNKNOWN = -1
+    """An Unknown OP code was received."""
+
+    @classmethod
+    def _missing_(cls, name: int) -> VoiceCode:
+        _logger.debug("Unknown OP code received: %s", name)
+
+        return cls.UNKNOWN
+
 
 class EncryptionType(str, enum.Enum):
     """Encryption Type."""
 
+    AEAD_AES256_GCM_RTPSIZE = "aead_aes256_gcm_rtpsize"
+    """AEAD AES256-GCM (RTP Size).
+    
+    Status: Available (Preferred)
+    """
+
+    AEAD_XCHACHA20_POLY1305_RTPSIZE = "aead_xchacha20_poly1305_rtpsize"
+    """AEAD XChaCha20 Poly1305 (RTP Size).
+    
+    Status: Available (Required)
+    """
+
+    XSALSA20_POLY1305_LITE_RTPSIZE = "xsalsa20_poly1305_lite_rtpsize"
+    """XSalsa20 Poly1305 Lite (RTP Size).
+
+    Status: Deprecated
+    """
+
+    AEAD_AES256_GCM = "aead_aes256_gcm"
+    """AEAD AES256-GCM.
+
+    Status: Deprecated
+    """
+
+    XSALSA20_POLY1305 = "xsalsa20_poly1305"
+    """XSalsa20 Poly1305.
+
+    Status: Deprecated
+    """
+
+    XSALSA20_POLY1305_SUFFIX = "xsalsa20_poly1305_suffix"
+    """XSalsa20 Poly1305 Suffix.
+
+    Status: Deprecated
+    """
+
+    XSALSA20_POLY1305_LITE = "xsalsa20_poly1305_lite"
+    """XSalsa20 Poly1305 Lite.
+
+    Status: Deprecated
+    """
+
 
 class SpeakingType(enum.IntFlag):
     """Speaking Type."""
+
+    NONE = 0
+    """No speaking mode is set."""
+
+    MICROPHONE = 1 << 0
+    """Normal transmission of voice audio."""
+
+    SOUNDSHARE = 1 << 1
+    """Transmission of context audio for video, no speaking indicator."""
+
+    PRIORITY = 1 << 2
+    """Priority speaker, lowering audio of other speakers."""
 
 
 VoicePayloadT = typing.TypeVar(
@@ -120,7 +186,10 @@ VoicePayloadT = typing.TypeVar(
 
 
 class VoicePayload(msgspec.Struct, typing.Generic[VoicePayloadT]):
-    """FIXME: Documentation."""
+    """Voice Payload.
+
+    The base payload when receiving and sending information.
+    """
 
     op: VoiceCode
     """The payload's OP code."""
@@ -129,7 +198,7 @@ class VoicePayload(msgspec.Struct, typing.Generic[VoicePayloadT]):
     """The data within the voice payload."""
 
     seq: int | None = msgspec.field(default=None)
-    """FIXME: I actually have no idea what to name this."""
+    """The latest sequence code from discord."""
 
 
 class Identify(msgspec.Struct):
@@ -358,7 +427,9 @@ def encode(obj: msgspec.Struct) -> bytes:
 
 def decode(
     payload: str | bytes,
-) -> VoicePayload[msgspec.Struct] | VoicePayload[msgspec.Raw]: # FIXME: This should be typed better.
+) -> (
+    VoicePayload[msgspec.Struct] | VoicePayload[msgspec.Raw]
+):  # TODO: This should be typed better.
     base = msgspec.json.decode(
         payload,
         strict=True,

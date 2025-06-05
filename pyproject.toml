@@ -18,7 +18,10 @@ keywords = ["asynchronous", "voice", "discord", "hikari", "bot"]
 dependencies = [
     "aiohttp",
     "hikari",
-    "msgspec"
+    "msgspec",
+    "cryptography",
+    "opuslib",
+    "pynacl"
 ]
 dynamic = ["version"]
 

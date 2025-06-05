@@ -3,5 +3,6 @@ title: Opcodes
 description: Voice Gateway Opcodes
 ---
 
-# Opcodes
-::: hikariwave.opcodes
+## Opcodes
+
+::: hikariwave.opcode

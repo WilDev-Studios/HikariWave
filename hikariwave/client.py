@@ -1,10 +1,16 @@
+import asyncio
 import logging
-from collections.abc import MutableMapping
+import typing
 
 import hikari
 
+import hikariwave.error as errors
 from hikariwave.connection import PendingConnection
 from hikariwave.connection import VoiceConnection
+
+__all__: typing.Sequence[str] = ("VoiceClient",)
+
+_logger: logging.Logger = logging.getLogger("hikariwave.client")
 
 
 class VoiceClient:
@@ -23,15 +29,8 @@ class VoiceClient:
         self.bot.subscribe(hikari.VoiceServerUpdateEvent, self._server_update)
         self.bot.subscribe(hikari.VoiceStateUpdateEvent, self._state_update)
 
-        self._logger: logging.Logger = logging.getLogger("hikariwave.client")
-        self._logger.setLevel(logging.NOTSET)
-        self._logger.propagate = True
-
-        self._pending_connections: MutableMapping[
-            hikari.Snowflake,
-            PendingConnection,
-        ] = {}
-        self._active_connections: MutableMapping[hikari.Snowflake, VoiceConnection] = {}
+        self._pending_connections: dict[hikari.Snowflake, PendingConnection] = {}
+        self._active_connections: dict[hikari.Snowflake, VoiceConnection] = {}
 
     async def _try_connection(self, guild_id: hikari.Snowflake) -> None:
         pending_connection: PendingConnection = self._pending_connections.get(
@@ -51,11 +50,11 @@ class VoiceClient:
 
         del self._pending_connections[guild_id]
 
-        self._logger.debug(
-            "Connected successfully: ENDPOINT: %s, SESSION_ID: %s, TOKEN: %s",
-                pending_connection.endpoint,
-                pending_connection.session_id,
-                pending_connection.token,
+        _logger.debug(
+            "Pending connection has now connected with ENDPOINT: %s, SESSION_ID: %s, TOKEN: %s",
+            pending_connection.endpoint,
+            pending_connection.session_id,
+            pending_connection.token,
         )
 
         self._active_connections[guild_id] = VoiceConnection(self.bot, guild_id)
@@ -78,8 +77,10 @@ class VoiceClient:
         pending_connection.endpoint = event.raw_endpoint
         pending_connection.token = event.token
 
-        self._logger.debug(
-            f"Voice server updated: Received data - ENDPOINT: {event.raw_endpoint}, TOKEN: {event.token}",
+        _logger.debug(
+            "Voice server updated: Received data - ENDPOINT: %s, TOKEN: %s",
+            event.raw_endpoint,
+            event.token,
         )
 
         await self._try_connection(event.guild_id)
@@ -96,8 +97,9 @@ class VoiceClient:
 
         self._pending_connections[event.guild_id].session_id = event.state.session_id
 
-        self._logger.debug(
-            f"Voice state updated: Received data - SESSION_ID: {event.state.session_id}",
+        _logger.debug(
+            "Voice state updated: Received data - SESSION_ID: %s",
+            event.state.session_id,
         )
 
         await self._try_connection(event.guild_id)
@@ -126,14 +128,11 @@ class VoiceClient:
 
         Raises
         ------
-        RuntimeError
+        ConnectionAlreadyEstablishedError
             If the bot is currently in another voice channel.
         """
         if guild_id in self._active_connections:
-            error: str = (
-                "Disconnect from the current channel before connecting to another"
-            )
-            raise RuntimeError(error)
+            return
 
         self._pending_connections[guild_id] = PendingConnection()
         await self.bot.update_voice_state(
@@ -143,8 +142,12 @@ class VoiceClient:
             self_deaf=deaf,
         )
 
-        self._logger.info(
-            f"Connecting to GUILD: {guild_id}, CHANNEL: {channel_id} - MUTED: {mute}, DEAFENED: {deaf}",
+        _logger.info(
+            "Connecting to GUILD: %s, CHANNEL: %s - MUTED: %s, DEAFENED: %s",
+            guild_id,
+            channel_id,
+            mute,
+            deaf,
         )
 
     async def disconnect(self, guild_id: hikari.Snowflake) -> None:
@@ -158,16 +161,64 @@ class VoiceClient:
 
         Raises
         ------
-        RuntimeError
+        ConnectionNotEstablishedError
             If the bot is not currently connected to a channel in the guild provided.
         """
         if guild_id not in self._active_connections:
             error: str = "No active connection to this guild was found at disconnect"
-            raise RuntimeError(error)
-
-        await self.bot.update_voice_state(guild_id, None)
+            raise errors.ConnectionNotEstablishedError(error)
 
         await self._active_connections[guild_id].close()
         del self._active_connections[guild_id]
 
-        self._logger.info(f"Disconnected from GUILD: {guild_id}")
+        await self.bot.update_voice_state(guild_id, None)
+
+        _logger.info("Disconnected from GUILD: %s", guild_id)
+
+    async def play_file(self, guild_id: hikari.Snowflake, filepath: str) -> None:
+        """
+        Play audio from a source file.
+
+        Parameters
+        ----------
+        guild_id : hikari.Snowflake
+            The ID of the guild that a current connection exists in.
+        filepath : str
+            The filepath to the source file.
+
+        Raises
+        ------
+        ConnectionNotEstablishedError
+            If the guild currently does not have an active connection.
+        """
+        while guild_id in self._pending_connections:
+            await asyncio.sleep(0.01)
+
+        connection: VoiceConnection = self._active_connections.get(guild_id, None)
+
+        if not connection:
+            error: str = "Can't stream file to a connection that doesn't exist."
+            raise errors.ConnectionNotEstablishedError(error)
+
+        await connection._ready_to_send.wait()
+        await connection.play_file(filepath)
+
+    async def play_silence(self, guild_id: hikari.Snowflake) -> None:
+        """
+        Play silent frames of audio.
+
+        Parameters
+        ----------
+        guild_id : hikari.Snowflake
+            The ID of the guild that a current connection exists in.
+
+        Raises
+        ------
+        ConnectionNotEstablishedError
+            If the guild currently does not have an active connection.
+        """
+        if guild_id not in self._active_connections:
+            error: str = "Can't stream file to a connection that doesn't exist."
+            raise errors.ConnectionNotEstablishedError(error)
+
+        await self._active_connections[guild_id].play_silence()

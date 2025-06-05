@@ -1,13 +1,17 @@
 import asyncio
 import struct
+import typing
 from collections.abc import Callable
+
+__all__: typing.Sequence[str] = ("VoiceClientProtocol",)
 
 
 class VoiceClientProtocol(asyncio.DatagramProtocol):
     """UDP client to interact with Discord's voice gateway."""
 
     def __init__(self, ssrc: int, callback: Callable[[str, int], None]) -> None:
-        """Create a new UDP client.
+        """
+        Create a new UDP client.
 
         Warning
         -------
@@ -43,8 +47,7 @@ class VoiceClientProtocol(asyncio.DatagramProtocol):
         self._transport.sendto(packet)
 
     def datagram_received(self, data: bytes, _: tuple[str, int]) -> None:
-        """
-        Method called automatically when a UDP packet is received.
+        """Datagram Received.
 
         Warning
         -------
