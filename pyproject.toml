@@ -1,26 +1,67 @@
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "hikariwave"
-version = "0.1.0a1"
 description = "Voice module for `hikari`-based Discord bots"
 readme = "README.md"
 requires-python = ">= 3.10"
 license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "WilDev Studios", email = "wildevstudios@gmail.com" }
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python"
 ]
 keywords = ["asynchronous", "voice", "discord", "hikari", "bot"]
-dependencies = ["aiohttp", "hikari"]
+dependencies = [
+    "aiohttp",
+    "hikari",
+    "msgspec"
+]
+dynamic = ["version"]
 
 [project.urls]
 "Homepage" = "https://github.com/WilDev-Studios/HikariWave"
+
+[tool.uv]
+required-version = "~=0.6"
+
+[tool.pyright]
+pythonVersion = "3.10"
+typeCheckingMode = "strict"
+reportPrivateUsage = false
+reportMissingTypeStubs = true
+reportUnnecessaryTypeIgnoreComment = "warning"
+reportUninitializedInstanceVariable = "error"
+reportShadowedImports = "warning"
+
+[tool.ruff]
+extend-exclude = ["examples/*", ".venv/*"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = []
+fixable = ["ALL"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "hikariwave/internal/about.py"
+pattern = "^__version__: typing\\.Final\\[str\\] = \"(?P<version>[0-9]+(\\.[0-9]+)?(\\.[0-9]+)?(dev|post|a[0-9]+)?)\"$"
+
+[tool.hatch.build.targets.wheel]
+packages = ["hikariwave"]
+artifacts = ["pyproject.toml", "README.md", "LICENSE"]
