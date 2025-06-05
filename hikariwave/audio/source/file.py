@@ -1,6 +1,7 @@
 import asyncio
 from collections.abc import AsyncGenerator
-from typing import override
+
+from typing_extensions import override
 
 from hikariwave.audio.source.base import AudioSource
 from hikariwave.internal import constants

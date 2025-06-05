@@ -1,2 +1,1 @@
-"""
-Contains all the audio source objects and logic."""
+"""Contains all the audio source objects and logic."""

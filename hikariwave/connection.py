@@ -155,15 +155,10 @@ class VoiceConnection:
 
             try:
                 async for message in self._websocket:
-                    match message.type:
-                        case aiohttp.WSMsgType.TEXT:
-                            await self._websocket_message(message)
-                        case (
-                            aiohttp.WSMsgType.CLOSE
-                            | aiohttp.WSMsgType.CLOSED
-                            | aiohttp.WSMsgType.ERROR
-                        ):
-                            _logger.debug("Connection flagged to close by websocket")
+                    if message.type == aiohttp.WSMsgType.TEXT:
+                        await self._websocket_message(message)
+                    elif message.type in [aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR]:
+                        _logger.debug(f"Connection flagged to close by websocket")
             except Exception as e:
                 _logger.error(e)
             finally:
@@ -202,7 +197,12 @@ class VoiceConnection:
                 raise errors.EncryptionModeNotSupportedError(error)
 
             loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
+            loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
 
+            def on_ip_discovered(ip: str, port: int) -> None:
+                self._external_ip = ip
+                self._external_port = port
+                self._external_address_discovered.set()
             def on_ip_discovered(ip: str, port: int) -> None:
                 self._external_ip = ip
                 self._external_port = port

@@ -1,30 +1,30 @@
-# HikariWave
+# hikari-wave
 
 Voice module for `hikari`-based Discord bots
 
 - Latest Version `UNRELEASED`
 - Supports Python `3.10+`
 
-[![Documentation Status](https://readthedocs.org/projects/hikariwave/badge/?version=latest&style=for-the-badge)](https://hikariwave.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/hikari-wave/badge/?version=latest&style=for-the-badge)](https://hikari-wave.readthedocs.io/en/latest/?badge=latest)
 
-## What is HikariWave?
+## What is hikari-wave?
 
-HikariWave is a standalone module for `hikari` (an asynchronous Discord API for building bots) that allows developers to easily manipulate voice-related systems and logic. Much like `discord.py`, HikariWave uses `aiohttp` to communicate with Discord on the backend, while most other `hikari`-based bots use `Lavalink` as a backend, which requires a separate install.
+`hikari-wave` is a standalone module for `hikari` (an asynchronous Discord API for building bots) that allows developers to easily manipulate voice-related systems and logic. Much like `discord.py`, `hikari-wave` uses `aiohttp` to communicate with Discord on the backend, while most other `hikari`-based bots use `Lavalink` as a backend, which requires a separate install.
 
-## What are HikariWave's features?
+## What are hikari-wave's features?
 
 - Doesn't require third-party installs besides `ffmpeg`
 - Easy to use, asynchronous API
 - Heavily type-hinted and type-safe
 
-## How do I use HikariWave?
+## How do I use hikari-wave?
 
-- Install `HikariWave` via `PyPI`: `pip install hikariwave`
+- Install `hikari-wave` via `PyPI`: `pip install hikari-wave`
 - Import it into your program using `import hikariwave`
 
 ## Documentation
 
-[You can find our documentation here](https://hikariwave.wildevstudios.net/).
+[You can find our documentation here](https://hikari-wave.wildevstudios.net/).
 
 ## Getting Started
 
@@ -117,4 +117,4 @@ Your contributions make this project better and more useful for everyone! Thank 
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/WilDev-Studios/HikariWave/blob/main/LICENSE). Copyright &copy; 2025 WilDev Studios. All rights reserved.
+This project is licensed under the [MIT License](https://github.com/WilDev-Studios/hikari-wave/blob/main/LICENSE). Copyright &copy; 2025 WilDev Studios. All rights reserved.

@@ -1,10 +1,8 @@
 from collections.abc import AsyncGenerator
-from typing import override
-
-from hikariwave.audio.opus import OpusEncoder
 from hikariwave.audio.source.base import AudioSource
-from hikariwave.internal import constants
-
+from hikariwave.audio.opus import OpusEncoder
+from hikariwave.constants import Constants
+from typing_extensions import override
 
 class SilentAudioSource(AudioSource):
     """
