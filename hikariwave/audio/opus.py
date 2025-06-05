@@ -7,7 +7,7 @@ script_dir: str = os.path.dirname(os.path.abspath(__file__))
 bin_dir: str = os.path.join(script_dir, "bin")
 
 if sys.platform == "win32":
-    os.environ["PATH"] = f"{bin_dir};{os.environ["PATH"]}"
+    os.environ["PATH"] = f"{bin_dir};{os.environ['PATH']}"
     os.add_dll_directory(bin_dir)
 
 import opuslib

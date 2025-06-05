@@ -2,7 +2,7 @@ from collections.abc import AsyncGenerator
 from hikariwave.audio.source.base import AudioSource
 from hikariwave.audio.opus import OpusEncoder
 from hikariwave.constants import Constants
-from typing import override
+from typing_extensions import override
 
 class SilentAudioSource(AudioSource):
     """

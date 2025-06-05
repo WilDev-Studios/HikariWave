@@ -7,7 +7,7 @@ name = "hikari-wave"
 version = "0.1.0a1"
 description = "Voice module for `hikari`-based Discord bots"
 readme = "README.md"
-requires-python = ">= 3.10"
+requires-python = ">= 3.9"
 license = "MIT"
 authors = [
     { name = "WilDev Studios", email = "wildevstudios@gmail.com" }
