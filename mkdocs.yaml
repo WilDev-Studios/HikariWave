@@ -1,8 +1,8 @@
-site_name: hikariwave
-site_url: https://hikariwave.wildevstudios.net
+site_name: hikari-wave
+site_url: https://hikari-wave.wildevstudios.net
 copyright: Copyright &copy; 2025 WilDev Studios. This software is protected by copyright and licensed under the MIT license.
 
-repo_url: https://github.com/WilDev-Studios/HikariWave
+repo_url: https://github.com/WilDev-Studios/hikari-wave
 
 theme:
   name: material
@@ -62,7 +62,7 @@ extra:
   generator: false
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/WilDev-Studios/HikariWave
+      link: https://github.com/WilDev-Studios/hikari-wave
     - icon: fontawesome/brands/discord
       link: https://discord.gg/4Ggybyy87d
 
