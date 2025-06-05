@@ -39,12 +39,6 @@ class Opcode(IntEnum):
     CLIENT_DISCONNECT: int = 13
     '''Opcode responsible for receiving the `Client Disconnect` payload.'''
 
-    UNKNOWN_18: int = 18
-    '''Unknown opcode - prevent errors.'''
-
-    UNKNOWN_20: int = 20
-    '''Unknown opcode - prevent errors.'''
-
     DAVE_PREPARE_TRANSITION: int = 21
     '''Opcode responsible for receiving the `DAVE Prepare Transition` payload.'''
 

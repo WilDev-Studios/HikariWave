@@ -4,6 +4,8 @@ from hikariwave.connection import PendingConnection, VoiceConnection
 import hikari
 import logging
 
+logger: logging.Logger = logging.getLogger("hikariwave.client")
+
 class VoiceClient:
     '''Voice client to interact with Discord's voice system.'''
 
@@ -21,10 +23,6 @@ class VoiceClient:
         self.bot.subscribe(hikari.VoiceServerUpdateEvent, self._server_update)
         self.bot.subscribe(hikari.VoiceStateUpdateEvent, self._state_update)
 
-        self._logger: logging.Logger = logging.getLogger("hikariwave.client")
-        self._logger.setLevel(logging.NOTSET)
-        self._logger.propagate = True
-
         self._pending_connections: MutableMapping[hikari.Snowflake, PendingConnection] = {}
         self._active_connections: MutableMapping[hikari.Snowflake, VoiceConnection] = {}
 
@@ -39,7 +37,7 @@ class VoiceClient:
         
         del self._pending_connections[guild_id]
 
-        self._logger.debug(f"Pending connection has now connected with ENDPOINT: {pending_connection.endpoint}, SESSION_ID: {pending_connection.session_id}, TOKEN: {pending_connection.token}")
+        logger.debug(f"Pending connection has now connected with ENDPOINT: {pending_connection.endpoint}, SESSION_ID: {pending_connection.session_id}, TOKEN: {pending_connection.token}")
 
         self._active_connections[guild_id] = VoiceConnection(self.bot, guild_id)
         await self._active_connections[guild_id].connect(
@@ -59,7 +57,7 @@ class VoiceClient:
         pending_connection.endpoint = event.raw_endpoint
         pending_connection.token = event.token
 
-        self._logger.debug(f"Voice server updated: Received data - ENDPOINT: {event.raw_endpoint}, TOKEN: {event.token}")
+        logger.debug(f"Voice server updated: Received data - ENDPOINT: {event.raw_endpoint}, TOKEN: {event.token}")
 
         await self._try_connection(event.guild_id)
 
@@ -75,7 +73,7 @@ class VoiceClient:
         
         self._pending_connections[event.guild_id].session_id = event.state.session_id
 
-        self._logger.debug(f"Voice state updated: Received data - SESSION_ID: {event.state.session_id}")
+        logger.debug(f"Voice state updated: Received data - SESSION_ID: {event.state.session_id}")
 
         await self._try_connection(event.guild_id)
 
@@ -107,7 +105,7 @@ class VoiceClient:
         self._pending_connections[guild_id] = PendingConnection()
         await self.bot.update_voice_state(guild_id, channel_id, self_mute=mute, self_deaf=deaf)
 
-        self._logger.info(f"Connecting to GUILD: {guild_id}, CHANNEL: {channel_id} - MUTED: {mute}, DEAFENED: {deaf}")
+        logger.info(f"Connecting to GUILD: {guild_id}, CHANNEL: {channel_id} - MUTED: {mute}, DEAFENED: {deaf}")
     
     async def disconnect(self, guild_id: hikari.Snowflake) -> None:
         '''
@@ -133,7 +131,7 @@ class VoiceClient:
 
         await self.bot.update_voice_state(guild_id, None)
 
-        self._logger.info(f"Disconnected from GUILD: {guild_id}")
+        logger.info(f"Disconnected from GUILD: {guild_id}")
     
     async def play_file(self, guild_id: hikari.Snowflake, filepath: str) -> None:
         if guild_id not in self._active_connections:

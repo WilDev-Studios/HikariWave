@@ -15,6 +15,8 @@ import hikari
 import logging
 import time
 
+logger: logging.Logger = logging.getLogger("hikariwave.connection")
+
 @dataclass
 class PendingConnection:
     '''A pending connection to a Discord voice server.'''
@@ -50,10 +52,6 @@ class VoiceConnection:
         
         self._bot: hikari.GatewayBot = bot
         self._guild_id: hikari.Snowflake = guild_id
-
-        self._logger: logging.Logger = logging.getLogger("hikariwave.connection")
-        self._logger.setLevel(logging.NOTSET)
-        self._logger.propagate = True
 
         self._endpoint: str = None
         self._session_id: str = None
@@ -112,7 +110,7 @@ class VoiceConnection:
             }
         })
 
-        self._logger.debug(f"Set speaking mode to {str(speaking).upper()}")
+        logger.debug(f"Set speaking mode to {str(speaking).upper()}")
 
     async def _websocket_handler(self) -> None:
         async with aiohttp.ClientSession() as session:
@@ -134,11 +132,11 @@ class VoiceConnection:
                         case aiohttp.WSMsgType.TEXT:
                             await self._websocket_message(message)
                         case aiohttp.WSMsgType.CLOSE | aiohttp.WSMsgType.CLOSED | aiohttp.WSMsgType.ERROR:
-                            self._logger.debug(f"Connection flagged to close by websocket")
+                            logger.debug(f"Connection flagged to close by websocket")
             except Exception as e:
-                self._logger.error(e)
+                logger.error(e)
             finally:
-                self._logger.debug(f"Connection with SESSION_ID: {self._session_id} closed")
+                logger.debug(f"Connection with SESSION_ID: {self._session_id} closed")
     
     async def _websocket_message(self, message: aiohttp.WSMessage) -> None:
         payload: dict[str] = message.json()
@@ -150,14 +148,14 @@ class VoiceConnection:
 
         match opcode:
             case Opcode.HELLO:
-                self._logger.debug("Received `HELLO` payload - Starting heartbeat")
+                logger.debug("Received `HELLO` payload - Starting heartbeat")
 
                 self._heartbeat_interval = data["heartbeat_interval"] / 1000
                 self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
             case Opcode.HEARTBEAT_ACK:
                 self._heartbeat_latency = time.time() - self._heartbeat_last_sent
             case Opcode.READY:
-                self._logger.debug("Received `READY` payload - Discovering IP")
+                logger.debug("Received `READY` payload - Discovering IP")
 
                 self._ssrc = data["ssrc"]
                 self._ip = data["ip"]
@@ -176,7 +174,7 @@ class VoiceConnection:
                     error: str = "No supported encryption mode was found"
                     raise RuntimeError(error)
                 
-                self._logger.debug(f"READY: SSRC={self._ssrc}, IP={self._ip}, PORT={self._port}, ENCRYPTION_MODE: {self._mode}")
+                logger.debug(f"READY: SSRC={self._ssrc}, IP={self._ip}, PORT={self._port}, ENCRYPTION_MODE: {self._mode}")
 
                 loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
 
@@ -185,7 +183,7 @@ class VoiceConnection:
                     self._external_port = port
                     self._external_address_discovered.set()
 
-                    self._logger.debug(f"External IP discovered - {ip}:{port}")
+                    logger.debug(f"External IP discovered - {ip}:{port}")
                 
                 self._transport, self._protocol = await loop.create_datagram_endpoint(
                     lambda: VoiceClientProtocol(self._ssrc, on_ip_discovered),
@@ -205,13 +203,13 @@ class VoiceConnection:
                     }
                 })
             case Opcode.RESUMED:
-                self._logger.debug(f"Session resumed after disconnect")
+                logger.debug(f"Session resumed after disconnect")
             case Opcode.SESSION_DESCRIPTION:
                 self._secret_key = bytes(data["secret_key"])
                 self._encryption = EncryptionMode(self._secret_key)
                 self._ready_to_send.set()
 
-                self._logger.debug(f"Session secret key received - Discord servers and client ready for voice packets")
+                logger.debug(f"Session secret key received - Discord servers and client ready for voice packets")
 
     async def close(self) -> None:
         '''
@@ -275,7 +273,7 @@ class VoiceConnection:
         print("ready")
         await self._set_speaking(True)
 
-        self._logger.debug("Playing silent audio frames to current voice channel")
+        logger.debug("Playing silent audio frames to current voice channel")
         print("statement 1")
 
         source: SilentAudioSource = SilentAudioSource()
@@ -289,7 +287,7 @@ class VoiceConnection:
         finally:
             await self._set_speaking(False)
         
-        self._logger.debug("Finished playing silent audio frames to current voice channel")
+        logger.debug("Finished playing silent audio frames to current voice channel")
         print("statement 2")
     
     async def stop(self) -> None:
