@@ -108,6 +108,9 @@ class VoiceConnection:
             self._heartbeat_last_sent = time.time()
 
     async def _set_speaking(self, speaking: bool) -> None:
+        if not self._websocket:
+            return
+        
         await self._websocket.send_json({
             "op": Opcode.SPEAKING,
             'd': {

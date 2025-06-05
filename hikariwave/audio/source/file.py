@@ -34,8 +34,11 @@ class FileAudioSource(AudioSource):
         if not self._process:
             return
         
-        self._process.terminate()
-        await self._process.wait()
+        try:
+            self._process.kill()
+            await self._process.wait()
+        except:
+            pass
 
         self._process = None
 
@@ -53,7 +56,7 @@ class FileAudioSource(AudioSource):
         )
 
     @override
-    async def decode(self) -> AsyncGenerator[bytes]:
+    async def decode(self) -> AsyncGenerator[bytes, None, None]:
         if self._process is None:
             await self._start()
         

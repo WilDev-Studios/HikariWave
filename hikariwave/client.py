@@ -1,5 +1,6 @@
 from hikariwave.connection import PendingConnection, VoiceConnection
 
+import asyncio
 import hikari
 import hikariwave.error as errors
 import logging
@@ -99,8 +100,7 @@ class VoiceClient:
         """
         
         if guild_id in self._active_connections:
-            error: str = "Disconnect from the current channel before connecting to another"
-            raise errors.ConnectionAlreadyEstablishedError(error)
+            return
         
         self._pending_connections[guild_id] = PendingConnection()
         await self.bot.update_voice_state(guild_id, channel_id, self_mute=mute, self_deaf=deaf)
@@ -149,11 +149,18 @@ class VoiceClient:
         ConnectionNotEstablishedError
             If the guild currently does not have an active connection.
         """
-        if guild_id not in self._active_connections:
+
+        while guild_id in self._pending_connections:
+            await asyncio.sleep(0.01)
+        
+        connection: VoiceConnection = self._active_connections.get(guild_id, None)
+
+        if not connection:
             error: str = "Can't stream file to a connection that doesn't exist."
             raise errors.ConnectionNotEstablishedError(error)
         
-        await self._active_connections[guild_id].play_file(filepath)
+        await connection._ready_to_send.wait()
+        await connection.play_file(filepath)
     
     async def play_silence(self, guild_id: hikari.Snowflake) -> None:
         """

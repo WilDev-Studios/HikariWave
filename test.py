@@ -18,7 +18,7 @@ async def voice_state_update(event: hikari.VoiceStateUpdateEvent) -> None:
     if event.state.channel_id:
         await voice.connect(event.guild_id, event.state.channel_id, deaf=False)
 
-        await asyncio.sleep(1)
+        #await asyncio.sleep(1)
         
         await voice.play_file(event.guild_id, "test.mp3")
     else:

@@ -11,7 +11,7 @@ class AudioSource(ABC):
     """
     
     @abstractmethod
-    async def decode(self) -> AsyncGenerator[bytes]:
+    async def decode(self) -> AsyncGenerator[bytes, None, None]:
         """
         Yields PCM frames of this source over an asynchronous generator.
 
