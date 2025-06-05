@@ -1,7 +1,7 @@
-from collections.abc import MutableMapping
 from hikariwave.connection import PendingConnection, VoiceConnection
 
 import hikari
+import hikariwave.error as errors
 import logging
 
 logger: logging.Logger = logging.getLogger("hikariwave.client")
@@ -23,8 +23,8 @@ class VoiceClient:
         self.bot.subscribe(hikari.VoiceServerUpdateEvent, self._server_update)
         self.bot.subscribe(hikari.VoiceStateUpdateEvent, self._state_update)
 
-        self._pending_connections: MutableMapping[hikari.Snowflake, PendingConnection] = {}
-        self._active_connections: MutableMapping[hikari.Snowflake, VoiceConnection] = {}
+        self._pending_connections: dict[hikari.Snowflake, PendingConnection] = {}
+        self._active_connections: dict[hikari.Snowflake, VoiceConnection] = {}
 
     async def _try_connection(self, guild_id: hikari.Snowflake) -> None:
         pending_connection: PendingConnection = self._pending_connections.get(guild_id, None)
@@ -134,13 +134,43 @@ class VoiceClient:
         logger.info(f"Disconnected from GUILD: {guild_id}")
     
     async def play_file(self, guild_id: hikari.Snowflake, filepath: str) -> None:
+        """
+        Play audio from a source file.
+        
+        Parameters
+        ----------
+        guild_id : hikari.Snowflake
+            The ID of the guild that a current connection exists in.
+        filepath : str
+            The filepath to the source file.
+        
+        Raises
+        ------
+        ConnectionNotEstablishedError
+            If the guild currently does not have an active connection.
+        """
         if guild_id not in self._active_connections:
-            return
+            error: str = "Can't stream file to a connection that doesn't exist."
+            raise errors.ConnectionNotEstablishedError(error)
         
         await self._active_connections[guild_id].play_file(filepath)
     
     async def play_silence(self, guild_id: hikari.Snowflake) -> None:
+        """
+        Play silent frames of audio.
+        
+        Parameters
+        ----------
+        guild_id : hikari.Snowflake
+            The ID of the guild that a current connection exists in.
+        
+        Raises
+        ------
+        ConnectionNotEstablishedError
+            If the guild currently does not have an active connection.
+        """
         if guild_id not in self._active_connections:
-            return
+            error: str = "Can't stream file to a connection that doesn't exist."
+            raise errors.ConnectionNotEstablishedError(error)
         
         await self._active_connections[guild_id].play_silence()

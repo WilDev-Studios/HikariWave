@@ -1,4 +1,5 @@
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from hikariwave.constants import Constants
 from nacl.bindings import crypto_aead_xchacha20poly1305_ietf_encrypt, crypto_secretbox, crypto_secretbox_NONCEBYTES
 from nacl.utils import random as nacl_random
 from typing import Generator

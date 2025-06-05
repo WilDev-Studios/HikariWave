@@ -5,7 +5,16 @@ from typing import AsyncGenerator
 import asyncio
 
 class FFmpegDecoder:
+    '''FFmpeg process handler and decoder.'''
+
     def __init__(self, source: AudioSource, format_: str=Constants.PCM_FORMAT) -> None:
+        """
+        Instantiate an FFmpeg decoder.
+        
+        Warning
+        -------
+        This is an internal object and should not be instantiated.
+        """
         self._source: AudioSource = source
         self._format: str = format_
         self._process: asyncio.subprocess.Process = None
@@ -54,7 +63,15 @@ class FFmpegDecoder:
             stderr=asyncio.subprocess.DEVNULL
         )
     
-    async def decode(self) -> AsyncGenerator[bytes, None]:
+    async def decode(self) -> AsyncGenerator[bytes]:
+        """
+        Decode a given source in the decoder.
+        
+        Returns
+        -------
+        typing.AsyncGenerator[bytes]    
+            An asynchronous generator that yields frames of FFmpeg data.
+        """
         await self._start()
 
         asyncio.create_task(self._feed_ffmpeg())

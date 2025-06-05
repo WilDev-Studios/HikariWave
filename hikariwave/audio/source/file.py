@@ -1,11 +1,31 @@
 from hikariwave.audio.source.base import AudioSource
 from hikariwave.constants import Constants
-from typing import AsyncIterator
+from typing import AsyncIterator, override
 
 import asyncio
 
 class FileAudioSource(AudioSource):
+    """
+    File-based audio source implementation.
+    
+    Warning
+    -------
+    This is an internal object and should not be instantiated.
+    """
+    
     def __init__(self, filepath: str) -> None:
+        """
+        Instantiate a file audio source.
+        
+        Warning
+        -------
+        This is an internal method and should not be called.
+        
+        Parameters
+        ----------
+        filepath : str
+            The path to the file that should be streamed.
+        """
         self._filepath: str = filepath
         self._process: asyncio.subprocess.Process = None
 
@@ -31,6 +51,7 @@ class FileAudioSource(AudioSource):
             stderr=asyncio.subprocess.DEVNULL
         )
 
+    @override
     async def decode(self) -> AsyncIterator[bytes]:
         if self._process is None:
             await self._start()

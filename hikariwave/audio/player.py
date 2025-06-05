@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -12,8 +14,8 @@ from typing import Callable
 import asyncio
 
 class AudioPlayer:
-    def __init__(self, connection: 'VoiceConnection') -> None:
-        self._connection: 'VoiceConnection' = connection
+    def __init__(self, connection: VoiceConnection) -> None:
+        self._connection: VoiceConnection = connection
 
         self._sequence: int = 0
         self._timestamp: int = 0

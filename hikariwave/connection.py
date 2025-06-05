@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from hikariwave.audio.encryption import EncryptionMode
 from hikariwave.audio.player import AudioPlayer
 from hikariwave.audio.source.file import FileAudioSource
@@ -21,17 +21,23 @@ logger: logging.Logger = logging.getLogger("hikariwave.connection")
 class PendingConnection:
     """A pending connection to a Discord voice server."""
 
-    endpoint: str=None
+    endpoint: str = field(default=None)
     """The endpoint in which this connection should connect to when activated."""
 
-    session_id: str=None
+    session_id: str = field(default=None)
     """The ID of the session provided by Discord that should be used to connect to/resume a session."""
 
-    token: str=None
+    token: str = field(default=None)
     """The token provided by Discord that should be used to identify when connecting."""
 
 class VoiceConnection:
-    """An active connection to a Discord voice server."""
+    """
+    An active connection to a Discord voice server.
+    
+    Warning
+    -------
+    This is an internal object and should not be instantiated.
+    """
 
     def __init__(self, bot: hikari.GatewayBot, guild_id: hikari.Snowflake) -> None:
         """
@@ -262,6 +268,18 @@ class VoiceConnection:
         await self._websocket_handler()
     
     async def play_file(self, filepath: str) -> None:
+        """
+        Play audio from a given filepath.
+        
+        Warning
+        -------
+        This method should only be called internally.
+
+        Parameters
+        ----------
+        filepath : str
+            The filepath of the file to stream.
+        """
         await self._ready_to_send.wait()
         await self._set_speaking(True)
 
@@ -272,6 +290,13 @@ class VoiceConnection:
         await self._set_speaking(False)
     
     async def play_silence(self) -> None:
+        """
+        Play silent frames of audio.
+        
+        Warning
+        -------
+        This method should only be called internally.
+        """
         await self._ready_to_send.wait()
         await self._set_speaking(True)
 
@@ -291,6 +316,13 @@ class VoiceConnection:
         logger.debug("Finished playing silent audio frames to current voice channel")
     
     async def stop(self) -> None:
+        """
+        Stop the connection from playing audio.
+        
+        Warning
+        -------
+        This method should only be called internally.
+        """
         if not self._player:
             return
         
