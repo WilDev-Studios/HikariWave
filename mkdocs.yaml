@@ -73,7 +73,7 @@ nav:
   - API Reference:
     - Client: pages/api/client.md
     - Connection: pages/api/connection.md
-    - Opcodes: pages/api/opcodes.md
+    - Opcodes: pages/api/opcode.md
     - Protocol: pages/api/protocol.md
   - Changelog:
     - Index: pages/changelog/index.md

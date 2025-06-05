@@ -20,7 +20,7 @@ classifiers = [
     "Programming Language :: Python"
 ]
 keywords = ["asynchronous", "voice", "discord", "hikari", "bot"]
-dependencies = ["aiohttp", "hikari"]
+dependencies = ["aiohttp", "cryptography", "hikari", "opuslib", "pynacl"]
 
 [project.urls]
 "Homepage" = "https://github.com/WilDev-Studios/HikariWave"

@@ -128,9 +128,21 @@ class VoiceClient:
             error: str = "No active connection to this guild was found at disconnect"
             raise RuntimeError(error)
         
-        await self.bot.update_voice_state(guild_id, None)
-
         await self._active_connections[guild_id].close()
         del self._active_connections[guild_id]
 
+        await self.bot.update_voice_state(guild_id, None)
+
         self._logger.info(f"Disconnected from GUILD: {guild_id}")
+    
+    async def play_file(self, guild_id: hikari.Snowflake, filepath: str) -> None:
+        if guild_id not in self._active_connections:
+            return
+        
+        await self._active_connections[guild_id].play_file(filepath)
+    
+    async def play_silence(self, guild_id: hikari.Snowflake) -> None:
+        if guild_id not in self._active_connections:
+            return
+        
+        await self._active_connections[guild_id].play_silence()

@@ -1,0 +1,70 @@
+from hikariwave.audio.source.base import AudioSource
+from hikariwave.constants import Constants
+from typing import AsyncGenerator
+
+import asyncio
+
+class FFmpegDecoder:
+    def __init__(self, source: AudioSource, format_: str=Constants.PCM_FORMAT) -> None:
+        self._source: AudioSource = source
+        self._format: str = format_
+        self._process: asyncio.subprocess.Process = None
+    
+    async def _cleanup(self) -> None:
+        if not self._process:
+            return
+        
+        if self._process.stdin:
+            self._process.stdin.close()
+
+        self._process.terminate()
+        await self._process.wait()
+
+        self._process = None
+
+    async def _feed_ffmpeg(self) -> None:
+        try:
+            while True:
+                chunk: bytes = await self._source.read(4096)
+
+                if not chunk:
+                    break
+
+                self._process.stdin.write(chunk)
+                await self._process.stdin.drain()
+        except Exception:
+            ...
+        finally:
+            self._process.stdin.close()
+
+    async def _start(self) -> None:
+        self._process = await asyncio.create_subprocess_exec(
+            "ffmpeg",
+            "-f", self._format,
+            "-ar", str(Constants.SAMPLE_RATE),
+            "-ac", str(Constants.CHANNELS),
+            "-i", "pipe:0",
+            "-f", self._format,
+            "-ar", str(Constants.SAMPLE_RATE),
+            "-ac", str(Constants.CHANNELS),
+            "-loglevel", "quiet",
+            "pipe:1",
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.DEVNULL
+        )
+    
+    async def decode(self) -> AsyncGenerator[bytes, None]:
+        await self._start()
+
+        asyncio.create_task(self._feed_ffmpeg())
+
+        while True:
+            data: bytes = await self._process.stdout.read(3840)
+
+            if not data:
+                break
+
+            yield data
+        
+        await self._cleanup()

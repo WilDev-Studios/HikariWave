@@ -6,7 +6,7 @@ Voice module for `hikari`-based Discord bots
 [![Documentation Status](https://readthedocs.org/projects/hikariwave/badge/?version=latest&style=for-the-badge)](https://hikariwave.readthedocs.io/en/latest/?badge=latest)
 
 ## What is HikariWave?
-HikariWave is a standalone module for `hikari` (an asynchronous Discord API for building bots) that allows for developers to easily manipulate voice-related systems and logic. Much like `discord.py`, HikariWave uses `aiohttp` to communicate with Discord on the backend, while most other `hikari`-based bots use `Lavalink` as a backend, which requires a separate install.
+HikariWave is a standalone module for `hikari` (an asynchronous Discord API for building bots) that allows developers to easily manipulate voice-related systems and logic. Much like `discord.py`, HikariWave uses `aiohttp` to communicate with Discord on the backend, while most other `hikari`-based bots use `Lavalink` as a backend, which requires a separate install.
 
 ## What are HikariWave's features?
 - Doesn't require third-party installs besides `ffmpeg`
@@ -31,8 +31,10 @@ bot.run()
 This won't do anything besides sit and look pretty. The following will make the bot connect/disconnect if a user joins/leaves a voice channel:
 ```python
 import hikari
+import hikariwave
 
 bot: hikari.GatewayBot = hikari.GatewayBot(TOKEN_HERE)
+voice: hikariwave.VoiceClient = hikariwave.VoiceClient(bot)
 
 @bot.listen(hikari.VoiceStateUpdateEvent)
 async def voice_state_update(event: hikari.VoiceStateUpdateEvent) -> None:

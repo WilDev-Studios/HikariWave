@@ -1,6 +1,13 @@
 from dataclasses import dataclass
-from hikariwave.opcodes import Opcode
+from hikariwave.audio.encryption import EncryptionMode
+from hikariwave.audio.player import AudioPlayer
+from hikariwave.audio.source.file import FileAudioSource
+from hikariwave.audio.source.silent import SilentAudioSource
+from hikariwave.constants import Constants
+from hikariwave.flag import SpeakingFlag
+from hikariwave.opcode import Opcode
 from hikariwave.protocol import VoiceClientProtocol
+from typing import Callable
 
 import aiohttp
 import asyncio
@@ -23,9 +30,6 @@ class PendingConnection:
 
 class VoiceConnection:
     '''An active connection to a Discord voice server.'''
-
-    WEBSOCKET_VERSION: int = 8
-    '''The version of the endpoint to connect to.'''
 
     def __init__(self, bot: hikari.GatewayBot, guild_id: hikari.Snowflake) -> None:
         '''
@@ -56,7 +60,7 @@ class VoiceConnection:
         self._token: str = None
 
         self._websocket: aiohttp.ClientWebSocketResponse = None
-        self._sequence: int = 0
+        self._ws_sequence: int = 0
         self._running: bool = False
 
         self._heartbeat_task: asyncio.Task = None
@@ -67,7 +71,10 @@ class VoiceConnection:
         self._ssrc: int = None
         self._ip: str = None
         self._port: int = None
-        self._mode: str = None
+        self._mode: Callable[[bytes, bytes, bytes], bytes] = None
+
+        self._timestamp: int = None
+        self._sequence: int = None
 
         self._protocol: asyncio.DatagramProtocol = None
         self._transport: asyncio.DatagramTransport = None
@@ -79,25 +86,36 @@ class VoiceConnection:
         self._secret_key: bytes = None
         self._ready_to_send: asyncio.Event = asyncio.Event()
 
-    async def _encrypt_aead_xchacha20_poly1305_rtpsize(self, data: bytes) -> bytes:
-        ...
+        self._player: AudioPlayer = None
 
     async def _heartbeat_loop(self) -> None:
         while self._running:
+            await asyncio.sleep(self._heartbeat_interval)
+
             await self._websocket.send_json({
                 "op": Opcode.HEARTBEAT,
                 'd': {
                     't': int(time.time() * 1000),
-                    "seq_ack": self._sequence
+                    "seq_ack": self._ws_sequence
                 }
             })
             self._heartbeat_last_sent = time.time()
-        
-            await asyncio.sleep(self._heartbeat_interval)
+
+    async def _set_speaking(self, speaking: bool) -> None:
+        await self._websocket.send_json({
+            "op": Opcode.SPEAKING,
+            'd': {
+                "speaking": SpeakingFlag.MICROPHONE if speaking else SpeakingFlag.NONE,
+                "delay": 0,
+                "ssrc": self._ssrc
+            }
+        })
+
+        self._logger.debug(f"Set speaking mode to {str(speaking).upper()}")
 
     async def _websocket_handler(self) -> None:
         async with aiohttp.ClientSession() as session:
-            self._websocket = await session.ws_connect(f"wss://{self._endpoint}/?v={VoiceConnection.WEBSOCKET_VERSION}")
+            self._websocket = await session.ws_connect(f"wss://{self._endpoint}/?v={Constants.WEBSOCKET_VERSION}")
 
             await self._websocket.send_json({
                 "op": Opcode.IDENTIFY,
@@ -115,7 +133,9 @@ class VoiceConnection:
                         case aiohttp.WSMsgType.TEXT:
                             await self._websocket_message(message)
                         case aiohttp.WSMsgType.CLOSE | aiohttp.WSMsgType.CLOSED | aiohttp.WSMsgType.ERROR:
-                            break
+                            self._logger.debug(f"Connection flagged to close by websocket")
+            except Exception as e:
+                self._logger.error(e)
             finally:
                 self._logger.debug(f"Connection with SESSION_ID: {self._session_id} closed")
     
@@ -125,7 +145,7 @@ class VoiceConnection:
         opcode: int = payload.get("op", None)
         data: dict[str] = payload.get('d', {})
 
-        self._sequence = payload.get('s', self._sequence)
+        self._ws_sequence = payload.get('s', self._ws_sequence)
 
         match opcode:
             case Opcode.HELLO:
@@ -141,16 +161,22 @@ class VoiceConnection:
                 self._ssrc = data["ssrc"]
                 self._ip = data["ip"]
                 self._port = data["port"]
+                print(data["modes"][0])
 
                 for mode in data["modes"]:
-                    if not getattr(self, f"_encrypt_{mode}", None):
+                    encryption_mode: Callable[[bytes, bytes, bytes], bytes] = getattr(EncryptionMode, mode, None)
+
+                    if not encryption_mode:
                         continue
 
-                    self._mode = mode
+                    self._mode = encryption_mode
+                    break
 
                 if not self._mode:
                     error: str = "No supported encryption mode was found"
                     raise RuntimeError(error)
+                
+                self._logger.debug(f"READY: SSRC={self._ssrc}, IP={self._ip}, PORT={self._port}, ENCRYPTION_MODE: {mode}")
 
                 loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
 
@@ -174,7 +200,7 @@ class VoiceConnection:
                         "data": {
                             "ip": self._external_ip,
                             "port": self._external_port,
-                            "mode": self._mode
+                            "mode": mode
                         }
                     }
                 })
@@ -197,6 +223,8 @@ class VoiceConnection:
         '''
         
         self._running = False
+
+        await self.stop()
 
         if self._heartbeat_task:
             self._heartbeat_task.cancel()
@@ -229,3 +257,45 @@ class VoiceConnection:
         self._running = True
 
         await self._websocket_handler()
+    
+    async def play_file(self, filepath: str) -> None:
+        await self._ready_to_send.wait()
+        await self._set_speaking(True)
+
+        source: FileAudioSource = FileAudioSource(filepath)
+        self._player = AudioPlayer(self)
+
+        await self._player.play(source)
+        await self._set_speaking(False)
+    
+    async def play_silence(self) -> None:
+        print("waiting")
+        await self._ready_to_send.wait()
+        print("ready")
+        await self._set_speaking(True)
+
+        self._logger.debug("Playing silent audio frames to current voice channel")
+        print("statement 1")
+
+        source: SilentAudioSource = SilentAudioSource()
+        self._player = AudioPlayer(self)
+
+        try:
+            while self._player:
+                await self._player.play(source)
+        except asyncio.CancelledError:
+            ...
+        finally:
+            await self._set_speaking(False)
+        
+        self._logger.debug("Finished playing silent audio frames to current voice channel")
+        print("statement 2")
+    
+    async def stop(self) -> None:
+        if not self._player:
+            return
+        
+        await self._player.stop()
+        await self._set_speaking(False)
+
+        self._player = None
