@@ -3,5 +3,6 @@ title: Constants
 description: Constants
 ---
 
-# Constants
+## Constants
+
 ::: hikariwave.constants

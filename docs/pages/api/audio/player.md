@@ -3,5 +3,6 @@ title: Player
 description: Audio Player
 ---
 
-# Player
+## Player
+
 ::: hikariwave.audio.player

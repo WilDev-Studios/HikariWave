@@ -3,5 +3,6 @@ title: Opus
 description: Opus
 ---
 
-# Opus
+## Opus
+
 ::: hikariwave.audio.opus

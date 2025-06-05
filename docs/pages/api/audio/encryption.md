@@ -3,5 +3,6 @@ title: Encryption
 description: Voice Encryption
 ---
 
-# Encryption
+## Encryption
+
 ::: hikariwave.audio.encryption

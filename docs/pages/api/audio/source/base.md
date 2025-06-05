@@ -3,5 +3,6 @@ title: Base
 description: Base Audio Source
 ---
 
-# Base
+## Base
+
 ::: hikariwave.audio.source.base

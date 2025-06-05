@@ -3,5 +3,6 @@ title: Connection
 description: Voice Connection
 ---
 
-# Connection
+## Connection
+
 ::: hikariwave.connection

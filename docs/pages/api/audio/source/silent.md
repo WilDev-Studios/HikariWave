@@ -3,5 +3,6 @@ title: Silent
 description: Silent Audio Source
 ---
 
-# Silent
+## Silent
+
 ::: hikariwave.audio.source.silent

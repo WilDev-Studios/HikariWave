@@ -3,5 +3,6 @@ title: Web
 description: Web Audio Source
 ---
 
-# Web
+## Web
+
 ::: hikariwave.audio.source.web

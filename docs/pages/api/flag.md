@@ -3,5 +3,6 @@ title: Flag
 description: Voice Flag
 ---
 
-# Flag
+## Flag
+
 ::: hikariwave.flag
