@@ -75,7 +75,6 @@ nav:
   - API Reference:
     - Audio:
       - Encryption: pages/api/audio/encryption.md
-      - FFmpeg: pages/api/audio/ffmpeg.md
       - Opus: pages/api/audio/opus.md
       - Player: pages/api/audio/player.md
       - Source:
@@ -83,13 +82,14 @@ nav:
         - File: pages/api/audio/source/file.md
         - Silent: pages/api/audio/source/silent.md
         - Web: pages/api/audio/source/web.md
+    - Internal:
+      - Constants: pages/api/internal/constants.md
     - Client: pages/api/client.md
     - Connection: pages/api/connection.md
-    - Constants: pages/api/constants.md
-    - Flag: pages/api/flag.md
+    - Error: pages/api/error.md
     - Header: pages/api/header.md
-    - Opcodes: pages/api/opcode.md
     - Protocol: pages/api/protocol.md
+    - Voice: pages/api/voice.md
   - Changelog:
     - Index: pages/changelog/index.md
     - 0.0.1a1 (UNRELEASED): pages/changelog/0.0.1a1.md
