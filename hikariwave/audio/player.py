@@ -51,21 +51,23 @@ class AudioPlayer:
             self._connection._mode if self._connection._mode else '',
         )
 
-    async def _send_packet(self, frame: bytes) -> None:
+    async def _send_packet(self, frame: bytes, encode_to_opus: bool) -> None:
         if not frame or not self._connection._transport:
             return
 
-        if (frame_length := len(frame)) < (frame_total := constants.FRAME_SIZE * 4):
-            frame += b"\x00" * (frame_total - frame_length)
+        if encode_to_opus:
+            if (frame_length := len(frame)) < (frame_total := constants.FRAME_SIZE * 4):
+                frame += b"\x00" * (frame_total - frame_length)
 
-        opus_packet: bytes = self._encoder.encode(frame)
+            frame = self._encoder.encode(frame)
+    
         rtp_header: bytes = Header.create_rtp(
             self._sequence,
             self._timestamp,
             self._connection._ssrc if self._connection._ssrc else 0,
         )
 
-        encrypted_packet: bytes = self._encryption_mode(rtp_header, opus_packet)
+        encrypted_packet: bytes = self._encryption_mode(rtp_header, frame)
         self._connection._transport.sendto(encrypted_packet)
 
         self._sequence = (self._sequence + 1) % constants.BIT_16
@@ -73,17 +75,17 @@ class AudioPlayer:
 
         await asyncio.sleep(constants.FRAME_LENGTH / 1000)
 
-    async def _playback(self, source: AudioSource) -> None:
+    async def _playback(self, source: AudioSource, encode_to_opus: bool) -> None:
         try:
             async for pcm_frame in source.decode(): # type: ignore
                 if not self._playing or not self._connection._transport:
                     break
 
-                await self._send_packet(pcm_frame) # type: ignore
+                await self._send_packet(pcm_frame, encode_to_opus) # type: ignore
         except (StopIteration, StopAsyncIteration):
             return
 
-    async def play(self, source: AudioSource) -> None:
+    async def play(self, source: AudioSource, encode_to_opus: bool = True) -> None:
         """
         Play the selected audio source and stream it to the connection.
 
@@ -95,13 +97,15 @@ class AudioPlayer:
         ----------
         source : AudioSource
             The audio source to stream from.
+        encode_to_opus : bool
+            If this source should encode into Opus before encryption.
         """
         if self._playing:
             await self.stop()
 
         self._playing = True
 
-        await self._playback(source)
+        await self._playback(source, encode_to_opus)
 
     async def stop(self) -> None:
         """

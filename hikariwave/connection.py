@@ -312,7 +312,7 @@ class VoiceConnection:
 
         try:
             await self._player.play(source)
-            await self._player.play(SilentAudioSource())
+            await self._player.play(SilentAudioSource(), False)
         except AttributeError:
             pass
 
