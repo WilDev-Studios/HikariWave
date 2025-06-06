@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import os
 import sys
-import typing
 
 from hikariwave.internal import constants
 
@@ -12,6 +13,7 @@ if sys.platform == "win32":
     os.add_dll_directory(bin_dir)
 
 import opuslib  # type: ignore[reportMissingTypeStubs] # noqa: E402
+import typing
 
 __all__: typing.Sequence[str] = ("OpusEncoder",)
 

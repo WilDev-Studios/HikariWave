@@ -1,2 +1,3 @@
 """
-Contains all audio-related objects and logic."""
+Contains all audio-related objects and logic.
+"""

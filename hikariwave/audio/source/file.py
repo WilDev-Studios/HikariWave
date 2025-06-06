@@ -1,10 +1,11 @@
-import asyncio
-from collections.abc import AsyncGenerator
-
-from typing_extensions import override
+from __future__ import annotations
 
 from hikariwave.audio.source.base import AudioSource
 from hikariwave.internal import constants
+from typing import AsyncGenerator, Union
+from typing_extensions import override
+
+import asyncio
 
 
 class FileAudioSource(AudioSource):
@@ -30,7 +31,7 @@ class FileAudioSource(AudioSource):
             The path to the file that should be streamed.
         """
         self._filepath: str = filepath
-        self._process: asyncio.subprocess.Process = None
+        self._process: Union[asyncio.subprocess.Process, None] = None
 
     async def _cleanup(self) -> None:
         if not self._process:
@@ -63,11 +64,11 @@ class FileAudioSource(AudioSource):
         )
 
     @override
-    async def decode(self) -> AsyncGenerator[bytes, None, None]:
-        if self._process is None:
+    async def decode(self) -> AsyncGenerator[bytes, None]: # type: ignore
+        if not self._process:
             await self._start()
 
-        while True:
+        while self._process and self._process.stdout:
             content: bytes = await self._process.stdout.read(constants.FRAME_SIZE * 4)
 
             if content:

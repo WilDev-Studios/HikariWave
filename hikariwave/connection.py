@@ -1,14 +1,6 @@
-import asyncio
-import logging
-import time
-import typing
-from dataclasses import dataclass
-from dataclasses import field
+from __future__ import annotations
 
-import aiohttp
-import hikari
-
-import hikariwave.error as errors
+from dataclasses import dataclass, field
 from hikariwave import voice
 from hikariwave.audio.encryption import EncryptionMode
 from hikariwave.audio.player import AudioPlayer
@@ -16,9 +8,18 @@ from hikariwave.audio.source.file import FileAudioSource
 from hikariwave.audio.source.silent import SilentAudioSource
 from hikariwave.internal import constants
 from hikariwave.protocol import VoiceClientProtocol
+from typing import Union
+
+import aiohttp
+import asyncio
+import hikari
+import hikariwave.error as errors
+import logging
+import time
+import typing
 
 if typing.TYPE_CHECKING:
-    from collections.abc import Callable
+    from typing import Callable
 
 __all__: typing.Sequence[str] = (
     "PendingConnection",
@@ -32,13 +33,13 @@ _logger: logging.Logger = logging.getLogger("hikariwave.connection")
 class PendingConnection:
     """A pending connection to a Discord voice server."""
 
-    endpoint: str = field(default=None)
+    endpoint: Union[str, None] = field(default=None)
     """The endpoint in which this connection should connect to when activated."""
 
-    session_id: str = field(default=None)
+    session_id: Union[str, None] = field(default=None)
     """The ID of the session provided by Discord that should be used to connect to/resume a session."""
 
-    token: str = field(default=None)
+    token: Union[str, None] = field(default=None)
     """The token provided by Discord that should be used to identify when connecting."""
 
 
@@ -51,7 +52,7 @@ class VoiceConnection:
     This is an internal object and should not be instantiated.
     """
 
-    def __init__(self, bot: hikari.GatewayBot, guild_id: hikari.Snowflake) -> None:
+    def __init__(self, bot: hikari.GatewayBot, bot_id: hikari.Snowflake, guild_id: hikari.Snowflake) -> None:
         """Instantiate a new active voice connection.
 
         Warning
@@ -63,51 +64,54 @@ class VoiceConnection:
         ----------
         bot : hikari.GatewayBot
             The bot instance to interface with.
+        bot_id : hikari.Snowflake
+            The ID of the bot provided.
         guild_id : hikari.Snowflake
             The ID of the guild that this connection is responsible for.
         """
         self._bot: hikari.GatewayBot = bot
+        self._bot_id: hikari.Snowflake = bot_id
         self._guild_id: hikari.Snowflake = guild_id
 
-        self._endpoint: str = None
-        self._session_id: str = None
-        self._token: str = None
+        self._endpoint: Union[str, None] = None
+        self._session_id: Union[str, None] = None
+        self._token: Union[str, None] = None
 
-        self._websocket: aiohttp.ClientWebSocketResponse = None
+        self._websocket: Union[aiohttp.ClientWebSocketResponse, None] = None
         self._ws_sequence: int = 0
         self._running: bool = False
 
-        self._heartbeat_task: asyncio.Task = None
+        self._heartbeat_task: Union[asyncio.Task[None], None] = None
         self._heartbeat_interval: float = 0.0
         self._heartbeat_last_sent: float = time.time()
         self._heartbeat_latency: float = 0.0
 
-        self._ssrc: int = None
-        self._ip: str = None
-        self._port: int = None
-        self._mode: voice.EncryptionType = None
+        self._ssrc: Union[int, None] = None
+        self._ip: Union[str, None] = None
+        self._port: Union[int, None] = None
+        self._mode: Union[voice.EncryptionType, None] = None
 
-        self._timestamp: int = None
-        self._sequence: int = None
+        self._timestamp: Union[int, None] = None
+        self._sequence: Union[int, None] = None
 
-        self._protocol: asyncio.DatagramProtocol = None
-        self._transport: asyncio.DatagramTransport = None
+        self._protocol: Union[asyncio.DatagramProtocol, None] = None
+        self._transport: Union[asyncio.DatagramTransport, None] = None
 
         self._external_address_discovered: asyncio.Event = asyncio.Event()
-        self._external_ip: str = None
-        self._external_port: int = None
+        self._external_ip: Union[str, None] = None
+        self._external_port: Union[int, None] = None
 
-        self._secret_key: bytes = None
+        self._secret_key: Union[bytes, None] = None
         self._ready_to_send: asyncio.Event = asyncio.Event()
 
-        self._encryption: EncryptionMode = None
-        self._player: AudioPlayer = None
+        self._encryption: Union[EncryptionMode, None] = None
+        self._player: Union[AudioPlayer, None] = None
 
     async def _heartbeat_loop(self) -> None:
-        while self._running:
+        while self._running and self._websocket:
             await asyncio.sleep(self._heartbeat_interval)
 
-            heartbeat = voice.VoicePayload(
+            heartbeat: voice.VoicePayload[voice.Heartbeat] = voice.VoicePayload(
                 op=voice.VoiceCode.HEARTBEAT,
                 d=voice.Heartbeat(
                     int(time.time() * 1000),
@@ -127,7 +131,7 @@ class VoiceConnection:
             voice.Speaking(
                 voice.SpeakingType.MICROPHONE if speaking else voice.SpeakingType.NONE,
                 0,
-                self._ssrc,
+                self._ssrc if self._ssrc else 0,
             ),
         )
 
@@ -145,9 +149,9 @@ class VoiceConnection:
                 voice.VoiceCode.IDENTIFY,
                 voice.Identify(
                     self._guild_id,
-                    self._bot.get_me().id,
-                    self._session_id,
-                    self._token,
+                    self._bot_id,
+                    self._session_id if self._session_id else '',
+                    self._token if self._token else '',
                 ),
             )
 
@@ -170,8 +174,6 @@ class VoiceConnection:
         if payload.op == voice.VoiceCode.UNKNOWN:
             return
 
-        _logger.debug("Received %s OP.", payload.op)
-
         data = payload.d
 
         if isinstance(data, voice.Ready):
@@ -182,7 +184,7 @@ class VoiceConnection:
             self._port = data.port
 
             for mode in data.modes:
-                encryption_mode: Callable[[bytes, bytes], bytes] | None = getattr(
+                encryption_mode: Union[Callable[[bytes, bytes], bytes], None] = getattr(
                     EncryptionMode,
                     mode,
                     None,
@@ -197,12 +199,7 @@ class VoiceConnection:
                 raise errors.EncryptionModeNotSupportedError(error)
 
             loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
-            loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
 
-            def on_ip_discovered(ip: str, port: int) -> None:
-                self._external_ip = ip
-                self._external_port = port
-                self._external_address_discovered.set()
             def on_ip_discovered(ip: str, port: int) -> None:
                 self._external_ip = ip
                 self._external_port = port
@@ -211,7 +208,7 @@ class VoiceConnection:
                 _logger.debug("External IP discovered - %s:%s", ip, port)
 
             self._transport, self._protocol = await loop.create_datagram_endpoint(
-                lambda: VoiceClientProtocol(self._ssrc, on_ip_discovered),
+                lambda: VoiceClientProtocol(self._ssrc if self._ssrc else 0, on_ip_discovered),
                 remote_addr=(self._ip, self._port),
             )
 
@@ -222,12 +219,15 @@ class VoiceConnection:
                 voice.SelectProtocol(
                     "udp",
                     voice.SelectProtocolData(
-                        self._external_ip,
-                        self._external_port,
+                        self._external_ip if self._external_ip else '',
+                        self._external_port if self._external_port else 0,
                         self._mode,
                     ),
                 ),
             )
+
+            if not self._websocket:
+                return
 
             await self._websocket.send_str(
                 voice.encode(select_protocol).decode("UTF-8"),
@@ -325,7 +325,7 @@ class VoiceConnection:
         await self._ready_to_send.wait()
         await self._set_speaking(True)
 
-        logger.debug("Playing silent audio frames to current voice channel")
+        _logger.debug("Playing silent audio frames to current voice channel")
 
         source: SilentAudioSource = SilentAudioSource()
         self._player = AudioPlayer(self)
@@ -338,7 +338,7 @@ class VoiceConnection:
         finally:
             await self._set_speaking(False)
 
-        logger.debug("Finished playing silent audio frames to current voice channel")
+        _logger.debug("Finished playing silent audio frames to current voice channel")
 
     async def stop(self) -> None:
         """

@@ -1,11 +1,12 @@
-import asyncio
-from collections.abc import AsyncGenerator
+from __future__ import annotations
 
 import aiohttp
-from typing_extensions import override
+import asyncio
 
 from hikariwave.audio.source.base import AudioSource
 from hikariwave.internal import constants
+from typing import AsyncGenerator
+from typing_extensions import override
 
 
 class WebAudioSource(AudioSource):
@@ -33,7 +34,7 @@ class WebAudioSource(AudioSource):
         self._url: str = url
 
     @override
-    async def decode(self) -> AsyncGenerator[bytes]:
+    async def decode(self) -> AsyncGenerator[bytes, None]: # type: ignore
         async with aiohttp.ClientSession() as session:
             async with session.get(self._url) as response:
                 if response.status != 200:
@@ -60,17 +61,18 @@ class WebAudioSource(AudioSource):
 
                 async def feed_ffmpeg() -> None:
                     async for chunk in response.content.iter_chunked(1024 * 16):
-                        if not chunk:
+                        if not chunk or not ffmpeg.stdin:
                             break
 
                         ffmpeg.stdin.write(chunk)
                         await ffmpeg.stdin.drain()
 
-                    ffmpeg.stdin.close()
+                    if ffmpeg.stdin:
+                        ffmpeg.stdin.close()
 
                 asyncio.create_task(feed_ffmpeg())
 
-                while True:
+                while ffmpeg.stdout:
                     pcm: bytes = await ffmpeg.stdout.read(
                         constants.FRAME_SIZE * constants.CHANNELS * 2,
                     )

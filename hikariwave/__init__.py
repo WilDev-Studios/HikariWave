@@ -1,4 +1,4 @@
-"""HikariWave.
+"""hikari-wave.
 
 Voice module for `hikari`-based Discord bots.
 

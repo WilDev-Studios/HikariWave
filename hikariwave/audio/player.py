@@ -1,20 +1,17 @@
 from __future__ import annotations
 
+from hikariwave.audio.opus import OpusEncoder
+from hikariwave.header import Header
+from hikariwave.internal import constants
+
+import asyncio
 import typing
 
 if typing.TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
-    from collections.abc import Callable
-
     from hikariwave.audio.source.base import AudioSource
     from hikariwave.connection import VoiceConnection
-
-import asyncio
-
-from hikariwave.audio.opus import OpusEncoder
-from hikariwave.audio.source.silent import SilentAudioSource
-from hikariwave.header import Header
-from hikariwave.internal import constants
+    
+    from typing import Callable
 
 __all__: typing.Sequence[str] = ("AudioPlayer",)
 
@@ -51,11 +48,11 @@ class AudioPlayer:
 
         self._encryption_mode: Callable[[bytes, bytes], bytes] = getattr(
             self._connection._encryption,
-            self._connection._mode,
+            self._connection._mode if self._connection._mode else '',
         )
 
     async def _send_packet(self, frame: bytes) -> None:
-        if not frame:
+        if not frame or not self._connection._transport:
             return
 
         if (frame_length := len(frame)) < (frame_total := constants.FRAME_SIZE * 4):
@@ -65,7 +62,7 @@ class AudioPlayer:
         rtp_header: bytes = Header.create_rtp(
             self._sequence,
             self._timestamp,
-            self._connection._ssrc,
+            self._connection._ssrc if self._connection._ssrc else 0,
         )
 
         encrypted_packet: bytes = self._encryption_mode(rtp_header, opus_packet)
@@ -77,20 +74,11 @@ class AudioPlayer:
         await asyncio.sleep(constants.FRAME_LENGTH / 1000)
 
     async def _playback(self, source: AudioSource) -> None:
-        generator: AsyncGenerator[bytes, None, None] = source.decode()
-        silence: AsyncGenerator[bytes, None, None] = SilentAudioSource().decode()
-
-        async for pcm_frame in generator:
+        async for pcm_frame in source.decode(): # type: ignore
             if not self._playing or not self._connection._transport:
                 break
 
-            await self._send_packet(pcm_frame)
-
-        async for pcm_frame in silence:
-            if not self._playing or not self._connection._transport:
-                break
-
-            await self._send_packet(pcm_frame)
+            await self._send_packet(pcm_frame) # type: ignore
 
     async def play(self, source: AudioSource) -> None:
         """

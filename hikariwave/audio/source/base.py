@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from abc import ABC
 from abc import abstractmethod
-from collections.abc import AsyncGenerator
+from typing import AsyncGenerator
 
 
 class AudioSource(ABC):
@@ -12,8 +14,8 @@ class AudioSource(ABC):
     """
 
     @abstractmethod
-    async def decode(self) -> AsyncGenerator[bytes, None, None]:
-        """Yields PCM frames of this source over an asynchronous generator.
+    async def decode(self) -> AsyncGenerator[bytes, None]:
+        """Yields PCM frames of this source over a generator.
 
         Warning
         -------

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from typing import Union
+
 import enum
+import hikari
 import logging
+import msgspec
 import typing
 
-import hikari
-import msgspec
 
 __all__: typing.Sequence[str] = (
     "ClientDisconnect",
@@ -111,8 +113,8 @@ class VoiceCode(enum.IntEnum):
     """An Unknown OP code was received."""
 
     @classmethod
-    def _missing_(cls, name: int) -> VoiceCode:
-        _logger.debug("Unknown OP code received: %s", name)
+    def _missing_(cls, value: object) -> VoiceCode:
+        _logger.debug("Received unknown opcode: %s - Ignoring payload", value)
 
         return cls.UNKNOWN
 
@@ -181,7 +183,7 @@ class SpeakingType(enum.IntFlag):
 
 VoicePayloadT = typing.TypeVar(
     "VoicePayloadT",
-    bound="msgspec.Raw|msgspec.Struct",
+    bound="Union[msgspec.Raw, msgspec.Struct]",
 )
 
 
@@ -197,7 +199,7 @@ class VoicePayload(msgspec.Struct, typing.Generic[VoicePayloadT]):
     d: VoicePayloadT
     """The data within the voice payload."""
 
-    seq: int | None = msgspec.field(default=None)
+    seq: Union[int, None] = msgspec.field(default=None)
     """The latest sequence code from discord."""
 
 
@@ -426,9 +428,9 @@ def encode(obj: msgspec.Struct) -> bytes:
 
 
 def decode(
-    payload: str | bytes,
+    payload: Union[str, bytes],
 ) -> (
-    VoicePayload[msgspec.Struct] | VoicePayload[msgspec.Raw]
+    Union[VoicePayload[msgspec.Struct], VoicePayload[msgspec.Raw]]
 ):  # TODO: This should be typed better.
     base = msgspec.json.decode(
         payload,

@@ -1,7 +1,10 @@
+from __future__ import annotations
+
+from typing import Callable, Union
+
 import asyncio
 import struct
 import typing
-from collections.abc import Callable
 
 __all__: typing.Sequence[str] = ("VoiceClientProtocol",)
 
@@ -24,7 +27,7 @@ class VoiceClientProtocol(asyncio.DatagramProtocol):
         callback : typing.Callable[[str, int], None]
             The synchronous method to call when the device's external UDP IP and port are discovered.
         """
-        self._transport: asyncio.DatagramTransport = None
+        self._transport: Union[asyncio.DatagramTransport, None] = None
         self._ssrc: int = ssrc
         self._callback: Callable[[str, int], None] = callback
 
@@ -46,7 +49,7 @@ class VoiceClientProtocol(asyncio.DatagramProtocol):
 
         self._transport.sendto(packet)
 
-    def datagram_received(self, data: bytes, _: tuple[str, int]) -> None:
+    def datagram_received(self, data: bytes, addr: tuple[str, int]) -> None:
         """Datagram Received.
 
         Warning

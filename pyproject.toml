@@ -26,13 +26,13 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-"Homepage" = "https://github.com/WilDev-Studios/HikariWave"
+"Homepage" = "https://github.com/WilDev-Studios/hikari-wave"
 
 [tool.uv]
 required-version = "~=0.6"
 
 [tool.pyright]
-pythonVersion = "3.10"
+pythonVersion = "3.9"
 typeCheckingMode = "strict"
 reportPrivateUsage = false
 reportMissingTypeStubs = true

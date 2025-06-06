@@ -1,17 +1,19 @@
+from __future__ import annotations
+
+from hikariwave.connection import PendingConnection
+from hikariwave.connection import VoiceConnection
+from typing import Union
+
 import asyncio
+import hikari
+import hikariwave.error as errors
 import logging
 import typing
 
-import hikari
-
-import hikariwave.error as errors
-from hikariwave.connection import PendingConnection
-from hikariwave.connection import VoiceConnection
 
 __all__: typing.Sequence[str] = ("VoiceClient",)
 
 _logger: logging.Logger = logging.getLogger("hikariwave.client")
-
 
 class VoiceClient:
     """Voice client to interact with Discord's voice system."""
@@ -33,7 +35,7 @@ class VoiceClient:
         self._active_connections: dict[hikari.Snowflake, VoiceConnection] = {}
 
     async def _try_connection(self, guild_id: hikari.Snowflake) -> None:
-        pending_connection: PendingConnection = self._pending_connections.get(
+        pending_connection: Union[PendingConnection, None] = self._pending_connections.get(
             guild_id,
             None,
         )
@@ -57,7 +59,7 @@ class VoiceClient:
             pending_connection.token,
         )
 
-        self._active_connections[guild_id] = VoiceConnection(self.bot, guild_id)
+        self._active_connections[guild_id] = VoiceConnection(self.bot, self.bot.get_me().id, guild_id) # type: ignore
         await self._active_connections[guild_id].connect(
             pending_connection.endpoint,
             pending_connection.session_id,
@@ -83,10 +85,13 @@ class VoiceClient:
             event.token,
         )
 
+        if not pending_connection.endpoint:
+            return
+
         await self._try_connection(event.guild_id)
 
     async def _state_update(self, event: hikari.VoiceStateUpdateEvent) -> None:
-        if event.state.user_id != self.bot.get_me().id:
+        if event.state.user_id != self.bot.get_me().id: # type: ignore
             return
 
         if event.guild_id in self._active_connections:
@@ -194,7 +199,7 @@ class VoiceClient:
         while guild_id in self._pending_connections:
             await asyncio.sleep(0.01)
 
-        connection: VoiceConnection = self._active_connections.get(guild_id, None)
+        connection: Union[VoiceConnection, None] = self._active_connections.get(guild_id, None)
 
         if not connection:
             error: str = "Can't stream file to a connection that doesn't exist."

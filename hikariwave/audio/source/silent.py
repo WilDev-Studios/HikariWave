@@ -1,7 +1,9 @@
-from collections.abc import AsyncGenerator
+from __future__ import annotations
+
 from hikariwave.audio.source.base import AudioSource
 from hikariwave.audio.opus import OpusEncoder
 from hikariwave.internal import constants
+from typing import AsyncGenerator
 from typing_extensions import override
 
 class SilentAudioSource(AudioSource):
@@ -28,6 +30,6 @@ class SilentAudioSource(AudioSource):
         )
 
     @override
-    async def decode(self) -> AsyncGenerator[bytes]:
+    async def decode(self) -> AsyncGenerator[bytes, None]: # type: ignore
         while True:
             yield self._silent_pcm

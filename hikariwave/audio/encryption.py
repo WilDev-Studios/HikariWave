@@ -1,13 +1,14 @@
-import typing
-from collections.abc import Generator
+from __future__ import annotations
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from hikariwave.internal import constants
 from nacl.bindings import crypto_aead_xchacha20poly1305_ietf_encrypt
 from nacl.bindings import crypto_secretbox
 from nacl.bindings import crypto_secretbox_NONCEBYTES
 from nacl.utils import random as nacl_random
+from typing import Generator
 
-from hikariwave.internal import constants
+import typing
 
 __all__: typing.Sequence[str] = ("EncryptionMode",)
 
