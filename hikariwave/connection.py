@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from hikariwave import voice
 from hikariwave.audio.encryption import EncryptionMode
 from hikariwave.audio.player import AudioPlayer
-from hikariwave.audio.source.file import FileAudioSource
+from hikariwave.audio.source.base import AudioSource
 from hikariwave.audio.source.silent import SilentAudioSource
 from hikariwave.internal import constants
 from hikariwave.protocol import VoiceClientProtocol
@@ -292,53 +292,31 @@ class VoiceConnection:
 
         await self._websocket_handler()
 
-    async def play_file(self, filepath: str) -> None:
+    async def play(self, source: AudioSource) -> None:
         """
-        Play audio from a given filepath.
-
+        Play audio from a given source.
+        
         Warning
         -------
         This method should only be called internally.
-
+        
         Parameters
         ----------
-        filepath : str
-            The filepath of the file to stream.
+        source : AudioSource
+            The source in which the audio will be framed.
         """
         await self._ready_to_send.wait()
         await self._set_speaking(True)
 
-        source: FileAudioSource = FileAudioSource(filepath)
-        self._player = AudioPlayer(self)
-
-        await self._player.play(source)
-        await self._set_speaking(False)
-
-    async def play_silence(self) -> None:
-        """
-        Play silent frames of audio.
-
-        Warning
-        -------
-        This method should only be called internally.
-        """
-        await self._ready_to_send.wait()
-        await self._set_speaking(True)
-
-        _logger.debug("Playing silent audio frames to current voice channel")
-
-        source: SilentAudioSource = SilentAudioSource()
         self._player = AudioPlayer(self)
 
         try:
-            while self._player:
-                await self._player.play(source)
-        except asyncio.CancelledError:
-            ...
-        finally:
-            await self._set_speaking(False)
+            await self._player.play(source)
+            await self._player.play(SilentAudioSource())
+        except AttributeError:
+            pass
 
-        _logger.debug("Finished playing silent audio frames to current voice channel")
+        await self.stop()
 
     async def stop(self) -> None:
         """

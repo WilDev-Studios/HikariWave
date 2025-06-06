@@ -74,11 +74,14 @@ class AudioPlayer:
         await asyncio.sleep(constants.FRAME_LENGTH / 1000)
 
     async def _playback(self, source: AudioSource) -> None:
-        async for pcm_frame in source.decode(): # type: ignore
-            if not self._playing or not self._connection._transport:
-                break
+        try:
+            async for pcm_frame in source.decode(): # type: ignore
+                if not self._playing or not self._connection._transport:
+                    break
 
-            await self._send_packet(pcm_frame) # type: ignore
+                await self._send_packet(pcm_frame) # type: ignore
+        except (StopIteration, StopAsyncIteration):
+            return
 
     async def play(self, source: AudioSource) -> None:
         """

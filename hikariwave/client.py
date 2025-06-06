@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from hikariwave.audio.source.file import FileAudioSource
 from hikariwave.connection import PendingConnection
 from hikariwave.connection import VoiceConnection
 from typing import Union
@@ -205,25 +206,5 @@ class VoiceClient:
             error: str = "Can't stream file to a connection that doesn't exist."
             raise errors.ConnectionNotEstablishedError(error)
 
-        await connection._ready_to_send.wait()
-        await connection.play_file(filepath)
-
-    async def play_silence(self, guild_id: hikari.Snowflake) -> None:
-        """
-        Play silent frames of audio.
-
-        Parameters
-        ----------
-        guild_id : hikari.Snowflake
-            The ID of the guild that a current connection exists in.
-
-        Raises
-        ------
-        ConnectionNotEstablishedError
-            If the guild currently does not have an active connection.
-        """
-        if guild_id not in self._active_connections:
-            error: str = "Can't stream file to a connection that doesn't exist."
-            raise errors.ConnectionNotEstablishedError(error)
-
-        await self._active_connections[guild_id].play_silence()
+        source: FileAudioSource = FileAudioSource(filepath)
+        await connection.play(source)
